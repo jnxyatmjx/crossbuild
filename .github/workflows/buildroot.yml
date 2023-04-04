@@ -50,19 +50,10 @@ jobs:
       - name: where i am
         run: |
           sudo timedatectl set-timezone "$TZ"
-          sudo mkdir -p /workdir
-          sudo chown $USER:$GROUPS /workdir
+          sudo mkdir -p /bin
+          sudo chown $USER:$GROUPS /bin
           echo -e "workspcace->$GITHUB_WORKSPACE"
       
-      - name: clone source code
-        working-directory: /workdir
-        run: |
-          df -hT $PWD
-          git clone --recurse-submodules --branch master $REPO_URL
-          #git clone --recurse-submodules --branch 2022.11.3 $REPO_URL
-          ln -sf /workdir/buildroot $GITHUB_WORKSPACE/buildroot
-          sudo apt-get -qq install sed make binutils gcc g++ bash patch bzip2 perl tar cpio unzip rsync wget libncurses-dev 
-
       - name: ssh to actions
         uses: P3TERX/ssh2actions@v1.0.0
         if: (github.event.inputs.ssh == 'true' && github.event.inputs.ssh  != 'false') || contains(github.event.action, 'ssh')
@@ -86,10 +77,23 @@ jobs:
       - name: where i am
         run: |
           sudo timedatectl set-timezone "$TZ"
+          sudo mkdir -p /workdir
+          sudo chown $USER:$GROUPS /workdir
           echo -e "workspcace->$GITHUB_WORKSPACE"
+
+      - name: clone source code
+        working-directory: /workdir
+        run: |
+          df -hT $PWD
+          git clone --recurse-submodules --branch master $REPO_URL
           ln -sf /workdir/buildroot $GITHUB_WORKSPACE/buildroot
+          sudo apt-get -qq install sed make binutils gcc g++ bash patch bzip2 perl tar cpio unzip rsync wget libncurses-dev 
+
+      - name: build
+        run: |
           cd $GITHUB_WORKSPACE/buildroot
-          make O="$RASPOUT" list-defconfigs
+          make O="$RASPOUT" raspberrypi3_defconfig
+          make O="$RASPOUT"
 
 
 
@@ -109,7 +113,17 @@ jobs:
       - name: where i am
         run: |
           sudo timedatectl set-timezone "$TZ"
-          echo -e "workspcace->$GITHUB_WORKSPACE"
+          sudo mkdir -p /workdir
+          sudo chown $USER:$GROUPS /workdir
+
+      - name: clone source code
+        working-directory: /workdir
+        run: |
+          df -hT $PWD
+          git clone --recurse-submodules --branch master $REPO_URL
           ln -sf /workdir/buildroot $GITHUB_WORKSPACE/buildroot
+          sudo apt-get -qq install sed make binutils gcc g++ bash patch bzip2 perl tar cpio unzip rsync wget libncurses-dev 
+      
+      - name: build
           cd $GITHUB_WORKSPACE/buildroot
           make O="$ER6POUT" list-defconfigs
