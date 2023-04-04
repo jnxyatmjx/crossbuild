@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: CI
+name: Cross Platform Build
 
 # Controls when the workflow will run
 on:
@@ -12,25 +12,93 @@ on:
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+    branches: [ "main" ]
+    inputs:
+      ssh:
+        description: 'ssh connection to actions'
+        required: false
+        default: 'false'
+
+env:
+  REPO_URL: https://git.busybox.net/buildroot
+  REPO_BRANCH: master
+  DIY_P1_SH: diy-part1.sh
+  DIY_P2_SH: diy-part2.sh
+  TZ: Asia/Shanghai
+
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
+  # This workflow contains a single job called "buildroot"
+  buildroot:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
-
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
-
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
+      - name: checkout
+        uses: actions/checkout@v3
+        with: 
+          fetch-depth: 0
+          submodules: true
+      
+      - name: where i am
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+          sudo timedatectl set-timezone "$TZ"
+          sudo mkdir -p /workdir
+          sudo chown $USER:$GROUPS /workdir
+          echo -e "workspcace->$GITHUB_WORKSPACE"
+      
+      - name: clone source code
+        working-directory: /workdir
+        run: |
+          df -hT $PWD
+          #git clone --recurse-submodules --branch master $REPO_URL
+          git clone --recurse-submodules --branch 2022.11.3 $REPO_URL
+
+      - name: ssh to actions
+        uses: P3TERX/ssh2actions@v1.0.0
+        if: (github.event.inputs.ssh == 'true' && github.event.inputs.ssh  != 'false') || contains(github.event.action, 'ssh')
+        env:
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+
+####################Raspberry 3B##########################################Raspberry 3B########################
+  raspberry3B:
+    needs: buildroot
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - uses: actions/checkout@v3
+        with: 
+          fetch-depth: 0
+          submodules: true
+      
+      - name: where i am
+        run: |
+          sudo timedatectl set-timezone "$TZ"
+          echo -e "workspcace->$GITHUB_WORKSPACE"
+
+
+####################er6P######################################er6P############################
+  er6P:
+    needs: buildroot
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - uses: actions/checkout@v3
+        with: 
+          fetch-depth: 0
+          submodules: true
+      
+      - name: where i am
+        run: |
+          sudo timedatectl set-timezone "$TZ"
+          echo -e "workspcace->$GITHUB_WORKSPACE"
