@@ -56,8 +56,8 @@ jobs:
         working-directory: /workdir
         run: |
           df -hT $PWD
-          #git clone --recurse-submodules --branch master $REPO_URL
-          git clone --recurse-submodules --branch 2022.11.3 $REPO_URL
+          git clone --recurse-submodules --branch master $REPO_URL
+          #git clone --recurse-submodules --branch 2022.11.3 $REPO_URL
 
       - name: ssh to actions
         uses: P3TERX/ssh2actions@v1.0.0
