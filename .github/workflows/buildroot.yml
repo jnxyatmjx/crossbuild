@@ -125,5 +125,6 @@ jobs:
           sudo apt-get -qq install sed make binutils gcc g++ bash patch bzip2 perl tar cpio unzip rsync wget libncurses-dev 
       
       - name: build
+        run: |
           cd $GITHUB_WORKSPACE/buildroot
           make O="$ER6POUT" list-defconfigs
