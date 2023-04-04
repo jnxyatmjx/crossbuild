@@ -87,6 +87,7 @@ jobs:
         run: |
           sudo timedatectl set-timezone "$TZ"
           echo -e "workspcace->$GITHUB_WORKSPACE"
+          ln -sf /workdir/buildroot $GITHUB_WORKSPACE/buildroot
           cd $GITHUB_WORKSPACE/buildroot
           make O="$RASPOUT" list-defconfigs
 
@@ -109,5 +110,6 @@ jobs:
         run: |
           sudo timedatectl set-timezone "$TZ"
           echo -e "workspcace->$GITHUB_WORKSPACE"
+          ln -sf /workdir/buildroot $GITHUB_WORKSPACE/buildroot
           cd $GITHUB_WORKSPACE/buildroot
           make O="$ER6POUT" list-defconfigs
