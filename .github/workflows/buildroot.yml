@@ -25,6 +25,8 @@ env:
   DIY_P1_SH: diy-part1.sh
   DIY_P2_SH: diy-part2.sh
   TZ: Asia/Shanghai
+  ER6POUT: er6p-out
+  RASPOUT: rasp-out
 
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
@@ -58,6 +60,8 @@ jobs:
           df -hT $PWD
           git clone --recurse-submodules --branch master $REPO_URL
           #git clone --recurse-submodules --branch 2022.11.3 $REPO_URL
+          ln -sf /workdir/buildroot $GITHUB_WORKSPACE/buildroot
+          sudo apt install -y sed make binutils gcc g++ bash patch bzip2 perl tar cpio python unzip rsync wget libncurses-dev 
 
       - name: ssh to actions
         uses: P3TERX/ssh2actions@v1.0.0
@@ -83,6 +87,9 @@ jobs:
         run: |
           sudo timedatectl set-timezone "$TZ"
           echo -e "workspcace->$GITHUB_WORKSPACE"
+          cd $GITHUB_WORKSPACE/buildroot
+          make O="$RASPOUT" list-defconfigs
+
 
 
 ####################er6P######################################er6P############################
@@ -102,3 +109,5 @@ jobs:
         run: |
           sudo timedatectl set-timezone "$TZ"
           echo -e "workspcace->$GITHUB_WORKSPACE"
+          cd $GITHUB_WORKSPACE/buildroot
+          make O="$ER6POUT" list-defconfigs
