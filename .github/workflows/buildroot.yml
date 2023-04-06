@@ -110,12 +110,18 @@ jobs:
           #make O="$RASPOUT" toolchain
           echo "stat=okk" >> $GITHUB_OUTPUT
       
+      - name: tar files and folders
+        run: |
+          df -hT $PWD
+          cd $GITHUB_WORKSPACE/buildroot/$RASPOUT
+          tar -cjvf /workdir/$RASPOUT.tar.bz2 ./host
+
       - name: upload file & directory
         uses: actions/upload-artifact@v3
         if: steps.buldxx.outputs.stat == 'okk'
         with:
           name: raspi3b-toolchain
-          path: ${{ github.workspace }}/buildroot/${{ env.RASPOUT }}
+          path: /workdir/${{ env.RASPOUT }}.tar.bz2
 
 
 
