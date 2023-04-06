@@ -157,8 +157,8 @@ jobs:
           cd $GITHUB_WORKSPACE/buildroot
           make O="$ER6POUT" list-defconfigs
   
-  merge: 
-    need: [er6P, raspberry3B]
+  mergeall:
+    needs: [er6P, raspberry3B]
     runs-on: ubuntu-latest
     permissions:
       contents: write
