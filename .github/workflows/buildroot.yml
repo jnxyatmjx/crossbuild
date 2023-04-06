@@ -117,7 +117,7 @@ jobs:
         if: steps.buldxx.outputs.stat == 'okk'
         with:
           name: raspi3b-toolchain
-          path: {{ github.workspace }}/buildroot/{{ env.RASPOUT }}
+          path: ${{ github.workspace }}/buildroot/${{ env.RASPOUT }}
 
 
 
