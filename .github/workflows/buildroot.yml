@@ -26,7 +26,7 @@ env:
   DIY_P2_SH: diy-part2.sh
   TZ: Asia/Shanghai
   ER6POUT: er6p-out
-  RASPOUT: rasp-out
+  RASPOUT: rasp3b-out
   RELEDIR: relxyzss
 
 
@@ -107,14 +107,14 @@ jobs:
           make O="$RASPOUT" raspberrypi3_defconfig
           [ -e $GITHUB_WORKSPACE/rasp.config ] && cp -f $GITHUB_WORKSPACE/rasp.config $GITHUB_WORKSPACE/buildroot/$RASPOUT/.config
           #make O="$RASPOUT" shadowsocks-libev
-          #make O="$RASPOUT" toolchain
+          make O="$RASPOUT" toolchain
       
       - name: tar files and folders
         id: tartt
         run: |
           df -hT $PWD
           cd $GITHUB_WORKSPACE/buildroot/$RASPOUT
-          tar -cjvf /workdir/$RASPOUT.tar.bz2 ./*
+          tar -cjvf /workdir/$RASPOUT.tar.bz2 ./host/
           echo "stat=okk" >> $GITHUB_OUTPUT
 
       - name: upload file & directory
