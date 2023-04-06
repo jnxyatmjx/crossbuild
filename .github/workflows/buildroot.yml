@@ -102,29 +102,29 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       
       - name: build
-        id: buldxx
         run: |
           cd $GITHUB_WORKSPACE/buildroot
           make O="$RASPOUT" raspberrypi3_defconfig
           [ -e $GITHUB_WORKSPACE/rasp.config ] && cp -f $GITHUB_WORKSPACE/rasp.config $GITHUB_WORKSPACE/buildroot/$RASPOUT/.config
           #make O="$RASPOUT" shadowsocks-libev
           #make O="$RASPOUT" toolchain
-          echo "stat=okk" >> $GITHUB_OUTPUT
       
       - name: tar files and folders
+        id: tartt
         run: |
-          sudo mkdir -p /$RELEDIR
-          sudo chown $USER:$GROUPS /$RELEDIR
+          sudo mkdir -p $GITHUB_WORKSPACE/$RELEDIR
+          sudo chown $USER:$GROUPS $GITHUB_WORKSPACE/$RELEDIR
           df -hT $PWD
           cd $GITHUB_WORKSPACE/buildroot/$RASPOUT
-          tar -cjvf /$RELEDIR/$RASPOUT.tar.bz2 ./*
+          tar -cjvf $GITHUB_WORKSPACE/$RELEDIR/$RASPOUT.tar.bz2 ./*
+          echo "stat=okk" >> $GITHUB_OUTPUT
 
       - name: upload file & directory
         uses: actions/upload-artifact@v3
-        if: steps.buldxx.outputs.stat == 'okk'
+        if: steps.tartt.outputs.stat == 'okk'
         with:
           name: raspi3b-toolchain
-          path: /${{ env.RELEDIR }}/${{ env.RASPOUT }}.tar.bz2
+          path: ${{ env.RELEDIR }}/${{ env.RASPOUT }}.tar.bz2
 
 
 
@@ -195,4 +195,4 @@ jobs:
         with:
           tag_name: ${{ steps.reltags.outputs.release_tag }}
           #body_path: release.txt
-          files: /${{ env.RELEDIR }}/*
+          files: ${{ env.RELEDIR }}/*
