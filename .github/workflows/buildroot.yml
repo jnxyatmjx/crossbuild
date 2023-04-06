@@ -107,7 +107,6 @@ jobs:
           cd $GITHUB_WORKSPACE/buildroot
           make O="$RASPOUT" raspberrypi3_defconfig
           [ -e $GITHUB_WORKSPACE/rasp.config ] && cp -f $GITHUB_WORKSPACE/rasp.config $GITHUB_WORKSPACE/buildroot/$RASPOUT/.config
-          [ -e $GITHUB_WORKSPACE/buildroot/$RASPOUT/.config ] && echo "have file"
           #make O="$RASPOUT" shadowsocks-libev
           #make O="$RASPOUT" toolchain
           echo "stat=okk" >> $GITHUB_OUTPUT
@@ -117,7 +116,7 @@ jobs:
         if: steps.buldxx.outputs.stat == 'okk'
         with:
           name: raspi3b-toolchain
-          path: $GITHUB_WORKSPACE/buildroot/rasp-out
+          path: /workdir/buildroot/rasp-out
 
 
 
