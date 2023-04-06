@@ -85,7 +85,7 @@ jobs:
         working-directory: /workdir
         run: |
           df -hT $PWD
-          git config --global advice.detachedHead false
+          #git config --global advice.detachedHead false
           git clone --recurse-submodules --branch $REPO_BRANCH $REPO_URL
           git checkout $REPO_BRANCH
           git pull origin $REPO_BRANCH
