@@ -112,11 +112,9 @@ jobs:
       - name: tar files and folders
         id: tartt
         run: |
-          sudo mkdir -p /$RELEDIR
-          sudo chown $USER:$GROUPS /$RELEDIR
           df -hT $PWD
           cd $GITHUB_WORKSPACE/buildroot/$RASPOUT
-          tar -cjvf /$RELEDIR/$RASPOUT.tar.bz2 ./*
+          tar -cjvf /workdir/$RASPOUT.tar.bz2 ./*
           echo "stat=okk" >> $GITHUB_OUTPUT
 
       - name: upload file & directory
@@ -124,7 +122,7 @@ jobs:
         if: steps.tartt.outputs.stat == 'okk'
         with:
           name: raspi3b-toolchain
-          path: /${{ env.RELEDIR }}/${{ env.RASPOUT }}.tar.bz2
+          path: /workdir/${{ env.RASPOUT }}.tar.bz2
 
 
 
