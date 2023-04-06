@@ -114,7 +114,7 @@ jobs:
         run: |
           df -hT $PWD
           cd $GITHUB_WORKSPACE/buildroot/$RASPOUT
-          tar -cjvf /workdir/$RASPOUT.tar.bz2 ./host
+          tar -cjvf /workdir/$RASPOUT.tar.bz2 ./*
 
       - name: upload file & directory
         uses: actions/upload-artifact@v3
