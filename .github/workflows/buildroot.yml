@@ -179,7 +179,7 @@ jobs:
           fetch-depth: 0
           submodules: true
       
-      - run:
+      - run: |
         sudo mkdir $GITHUB_WORKSPACE/relxxse
         sudo chown $USER:$GROUPS $GITHUB_WORKSPACE/relxxse
 
