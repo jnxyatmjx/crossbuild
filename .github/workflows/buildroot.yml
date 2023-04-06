@@ -90,7 +90,6 @@ jobs:
           cd /workdir/buildroot
           git checkout $REPO_BRANCH
           git pull origin $REPO_BRANCH
-
           ln -sf /workdir/buildroot $GITHUB_WORKSPACE/buildroot
           sudo apt-get -qq install sed make binutils gcc g++ bash patch bzip2 perl tar cpio unzip rsync wget libncurses-dev 
 
@@ -171,12 +170,20 @@ jobs:
           fetch-depth: 0
           submodules: true
       
+      - name: generate release tag
+        id: reltags
+        if: (!cancelled())
+        run: |
+          echo -e "release_tag=$(date +"%Y.%m.%d-%H%M%S")" >> $GITHUB_OUTPUT
+          touch release.txt
+          echo -e "stat=success" >> $GITHUB_OUTPUT
+
       - name: push to release
         uses: softprops/action-gh-release@v1
-        #if: steps.tag.outputs.stat == 'success' && !cancelled()
+        if: steps.reltags.outputs.stat == 'success' && !cancelled()
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          #tag_name: ${{ steps.tag.outputs.release_tag }}
+          tag_name: ${{ steps.reltags.outputs.release_tag }}
           #body_path: release.txt
           files: ${{ github.workspace }}/buildroot/${{ env.RASPOUT }}/*
