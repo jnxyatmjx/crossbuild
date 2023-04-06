@@ -27,7 +27,7 @@ env:
   TZ: Asia/Shanghai
   ER6POUT: er6p-out
   RASPOUT: rasp-out
-  RELEDIR: releass
+  RELEDIR: relxyzss
 
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
@@ -181,13 +181,13 @@ jobs:
       
       - name: create release folder
         run: |
-          sudo mkdir $GITHUB_WORKSPACE/relxxse
-          sudo chown $USER:$GROUPS $GITHUB_WORKSPACE/relxxse
+          sudo mkdir $GITHUB_WORKSPACE/$RELEDIR
+          sudo chown $USER:$GROUPS $GITHUB_WORKSPACE/$RELEDIR
 
       - uses: actions/download-artifact@v3
         with:
           name: raspi3b-toolchain
-          path: ${{ github.workspace }}/relxxse
+          path: ${{ github.workspace }}/${{ env.RELEDIR }}
 
       - name: generate release tag
         id: reltags
@@ -205,4 +205,4 @@ jobs:
         with:
           tag_name: ${{ steps.reltags.outputs.release_tag }}
           #body_path: release.txt
-          files: ${{ github.workspace }}/relxxse/*
+          files: ${{ github.workspace }}/${{ env.RELEDIR }}/*
