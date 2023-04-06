@@ -192,4 +192,4 @@ jobs:
         with:
           tag_name: ${{ steps.reltags.outputs.release_tag }}
           #body_path: release.txt
-          files: ${{ github.workspace }}/buildroot/${{ env.RASPOUT }}/*
+          files: /workdir/${{ env.RASPOUT }}.tar.bz2
