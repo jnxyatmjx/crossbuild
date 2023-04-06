@@ -179,6 +179,15 @@ jobs:
           fetch-depth: 0
           submodules: true
       
+      - run:
+        sudo mkdir $GITHUB_WORKSPACE/relxxse
+        sudo chown $USER:$GROUPS $GITHUB_WORKSPACE/relxxse
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: raspi3b-toolchain
+          path: ${{ github.workspace }}/relxxse
+
       - name: generate release tag
         id: reltags
         if: (!cancelled())
