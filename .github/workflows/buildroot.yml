@@ -21,7 +21,7 @@ on:
 
 env:
   REPO_URL: https://git.busybox.net/buildroot
-  REPO_BRANCH: master
+  REPO_BRANCH: 2021.11
   DIY_P1_SH: diy-part1.sh
   DIY_P2_SH: diy-part2.sh
   TZ: Asia/Shanghai
@@ -85,7 +85,11 @@ jobs:
         working-directory: /workdir
         run: |
           df -hT $PWD
-          git clone --recurse-submodules --branch master $REPO_URL
+          git config --global advice.detachedHead false
+          git clone --recurse-submodules --branch $REPO_BRANCH $REPO_URL
+          git checkout $REPO_BRANCH
+          git pull origin $REPO_BRANCH
+
           ln -sf /workdir/buildroot $GITHUB_WORKSPACE/buildroot
           sudo apt-get -qq install sed make binutils gcc g++ bash patch bzip2 perl tar cpio unzip rsync wget libncurses-dev 
 
@@ -100,7 +104,7 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/buildroot
           make O="$RASPOUT" raspberrypi3_defconfig
-          make O="$RASPOUT"
+          make O="$RASPOUT" shadowsocks-libev
 
 
 
