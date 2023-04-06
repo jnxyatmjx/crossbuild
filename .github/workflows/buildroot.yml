@@ -106,7 +106,7 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/buildroot
           make O="$RASPOUT" raspberrypi3_defconfig
-          cp -f $GITHUB_WORKSPACE/rasp.config $GITHUB_WORKSPACE/buildroot/$RASPOUT/.config
+          [ -e $GITHUB_WORKSPACE/rasp.config ] && cp -f $GITHUB_WORKSPACE/rasp.config $GITHUB_WORKSPACE/buildroot/$RASPOUT/.config
           #make O="$RASPOUT" shadowsocks-libev
           #make O="$RASPOUT" toolchain
           echo "stat=okk" >> $GITHUB_OUTPUT
