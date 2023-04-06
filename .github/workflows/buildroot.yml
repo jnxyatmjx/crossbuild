@@ -27,6 +27,7 @@ env:
   TZ: Asia/Shanghai
   ER6POUT: er6p-out
   RASPOUT: rasp-out
+  RELEDIR: releass
 
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
@@ -112,16 +113,18 @@ jobs:
       
       - name: tar files and folders
         run: |
+          sudo mkdir -p /$RELEDIR
+          sudo chown $USER:$GROUPS /$RELEDIR
           df -hT $PWD
           cd $GITHUB_WORKSPACE/buildroot/$RASPOUT
-          tar -cjvf /workdir/$RASPOUT.tar.bz2 ./*
+          tar -cjvf /$RELEDIR/$RASPOUT.tar.bz2 ./*
 
       - name: upload file & directory
         uses: actions/upload-artifact@v3
         if: steps.buldxx.outputs.stat == 'okk'
         with:
           name: raspi3b-toolchain
-          path: /workdir/${{ env.RASPOUT }}.tar.bz2
+          path: /${{ env.RELEDIR }}/${{ env.RASPOUT }}.tar.bz2
 
 
 
@@ -192,4 +195,4 @@ jobs:
         with:
           tag_name: ${{ steps.reltags.outputs.release_tag }}
           #body_path: release.txt
-          files: /workdir/${{ env.RASPOUT }}.tar.bz2
+          files: /${{ env.RELEDIR }}/*
