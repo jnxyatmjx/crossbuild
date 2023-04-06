@@ -106,10 +106,9 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/buildroot
           make O="$RASPOUT" raspberrypi3_defconfig
-          [ -e $GITHUB_WORKSPACE/rasp.config ] && md5sum $GITHUB_WORKSPACE/rasp.config && cp -f $GITHUB_WORKSPACE/rasp.config $GITHUB_WORKSPACE/buildroot/$RASPOUT/.config
-          [ -e $GITHUB_WORKSPACE/buildroot/$RASPOUT/.config ] && md5sum $GITHUB_WORKSPACE/buildroot/$RASPOUT/.config
+          [ -e $GITHUB_WORKSPACE/rasp.config ] && cp -f $GITHUB_WORKSPACE/rasp.config $GITHUB_WORKSPACE/buildroot/$RASPOUT/.config
           #make O="$RASPOUT" shadowsocks-libev
-          #make O="$RASPOUT" toolchain
+          make O="$RASPOUT" toolchain
           echo "stat=okk" >> $GITHUB_OUTPUT
       
       - name: upload file & directory
@@ -157,3 +156,25 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/buildroot
           make O="$ER6POUT" list-defconfigs
+  
+  merge: 
+    need: [er6P, raspberry3B]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - uses: actions/checkout@v3
+        with: 
+          fetch-depth: 0
+          submodules: true
+      
+      - name: push to release
+        uses: softprops/action-gh-release@v1
+        #if: steps.tag.outputs.stat == 'success' && !cancelled()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          #tag_name: ${{ steps.tag.outputs.release_tag }}
+          #body_path: release.txt
+          files: ${{ github.workspace }}/buildroot/${{ env.RASPOUT }}/*
