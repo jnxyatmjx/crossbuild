@@ -157,7 +157,7 @@ jobs:
         working-directory: /workdir
         env:
           REPO_URL: https://git.busybox.net/buildroot
-          REPO_BRANCH: 2021.11
+          REPO_BRANCH: 2019.11.3
         run: |
           df -hT $PWD
           git config --global advice.detachedHead false
@@ -172,7 +172,25 @@ jobs:
       - name: build
         run: |
           cd $GITHUB_WORKSPACE/buildroot
-          make O="$ER6POUT" list-defconfigs
+          make O="$ER6POUT" qemu_mips32r2el_malta_defconfig
+          [ -e $GITHUB_WORKSPACE/er6p.config ] && cp -f $GITHUB_WORKSPACE/er6p.config $GITHUB_WORKSPACE/buildroot/$ER6POUT/.config
+          make O="$ER6POUT" shadowsocks-libev
+      
+      - name: tar files and folders
+        id: tartt
+        run: |
+          df -hT $PWD
+          cd $GITHUB_WORKSPACE/buildroot/$ER6POUT
+          tar -cjvf /workdir/$ER6POUT.${{ matrix.os }}.tar.bz2 ./host/ ./target/usr/bin/ ./target/bin/
+          echo "stat=okk" >> $GITHUB_OUTPUT
+
+      - name: upload file & directory
+        uses: actions/upload-artifact@v3
+        if: steps.tartt.outputs.stat == 'okk'
+        with:
+          name: er6p-toolchain
+          path: /workdir/${{ env.ER6POUT }}.${{ matrix.os }}.tar.bz2      
+    
 
 
 ########################################Merge all workflows################################################
@@ -197,6 +215,11 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: raspi3b-toolchain
+          path: ${{ github.workspace }}/${{ env.RELEDIR }}
+      
+      - uses: actions/download-artifact@v3
+        with:
+          name: er6p-toolchain
           path: ${{ github.workspace }}/${{ env.RELEDIR }}
 
       - name: generate release tag
