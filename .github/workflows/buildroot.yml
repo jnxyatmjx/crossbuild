@@ -174,7 +174,7 @@ jobs:
           cd $GITHUB_WORKSPACE/buildroot
           make O="$ER6POUT" qemu_mips32r2el_malta_defconfig
           [ -e $GITHUB_WORKSPACE/er6p.config ] && cp -f $GITHUB_WORKSPACE/er6p.config $GITHUB_WORKSPACE/buildroot/$ER6POUT/.config
-          #make O="$ER6POUT" shadowsocks-libev
+          make O="$ER6POUT" toolchain
       
       - name: tar files and folders
         id: tartt
