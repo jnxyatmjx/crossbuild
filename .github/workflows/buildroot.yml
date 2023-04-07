@@ -21,7 +21,7 @@ on:
 
 env:
   REPO_URL: https://git.busybox.net/buildroot
-  REPO_BRANCH: 2021.02.4
+  REPO_BRANCH: 2021.11
   DIY_P1_SH: diy-part1.sh
   DIY_P2_SH: diy-part2.sh
   TZ: Asia/Shanghai
