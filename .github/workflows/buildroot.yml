@@ -111,11 +111,10 @@ jobs:
           cd $GITHUB_WORKSPACE/buildroot
           [ -e $GITHUB_WORKSPACE/shadowsocks-libev.mk ] && cp -f $GITHUB_WORKSPACE/shadowsocks-libev.mk $GITHUB_WORKSPACE/buildroot/package/shadowsocks-libev/
           [ -e $GITHUB_WORKSPACE/buildroot/package/shadowsocks-libev/shadowsocks-libev.hash ] && rm -f $GITHUB_WORKSPACE/buildroot/package/shadowsocks-libev/shadowsocks-libev.hash
-          [ -e $GITHUB_WORKSPACE/patchs ] && cp -fr $GITHUB_WORKSPACE/patchs/*  $GITHUB_WORKSPACE/buildroot/package/shadowsocks-libev/
+          #[ -e $GITHUB_WORKSPACE/patchs ] && cp -fr $GITHUB_WORKSPACE/patchs/*  $GITHUB_WORKSPACE/buildroot/package/shadowsocks-libev/
           make O="$RASPOUT" raspberrypi3_defconfig
           [ -e $GITHUB_WORKSPACE/rasp.config ] && cp -f $GITHUB_WORKSPACE/rasp.config $GITHUB_WORKSPACE/buildroot/$RASPOUT/.config
           make O="$RASPOUT" shadowsocks-libev
-          #make O="$RASPOUT" toolchain
       
       - name: tar files and folders
         id: tartt

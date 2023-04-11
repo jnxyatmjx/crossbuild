@@ -14,7 +14,16 @@ SHADOWSOCKS_LIBEV_CPE_ID_VENDOR = shadowsocks
 SHADOWSOCKS_LIBEV_DEPENDENCIES = host-pkgconf c-ares libev libsodium mbedtls pcre
 SHADOWSOCKS_LIBEV_INSTALL_STAGING = YES
 # We're patching configure.ac
-SHADOWSOCKS_LIBEV_CONF_OPTS = -DCMAKE_BUILD_TYPE=Release
+SHADOWSOCKS_LIBEV_AUTORECONF = YES
+SHADOWSOCKS_LIBEV_CONF_OPTS = \
+        --with-pcre=$(STAGING_DIR)/usr \
+        --disable-ssp
 
-#$(eval $(autotools-package))
-$(eval $(cmake-package))
+ifeq ($(BR2_PACKAGE_SHADOWSOCKS_LIBEV_CONNMARKTOS),y)
+SHADOWSOCKS_LIBEV_DEPENDENCIES += libnetfilter_conntrack
+SHADOWSOCKS_LIBEV_CONF_OPTS += --enable-connmarktos
+else
+SHADOWSOCKS_LIBEV_CONF_OPTS += --disable-connmarktos
+endif
+
+$(eval $(autotools-package))
