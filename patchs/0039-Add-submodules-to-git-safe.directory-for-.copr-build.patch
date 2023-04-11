@@ -1,0 +1,24 @@
+From 9eeadf9137be27dbe57fb7e5564c836a3497c5b6 Mon Sep 17 00:00:00 2001
+From: Maxim Galaganov <max@internet.ru>
+Date: Fri, 24 Jun 2022 12:16:34 +0300
+Subject: [PATCH 39/85] Add submodules to git safe.directory for .copr build
+
+---
+ .copr/Makefile | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/.copr/Makefile b/.copr/Makefile
+index 7a74155..b0c5d0b 100644
+--- a/.copr/Makefile
++++ b/.copr/Makefile
+@@ -17,4 +17,7 @@ endif
+ 
+ srpm: deps
+ 	git config --global --add safe.directory $(TOP_DIR)
++	git config --global --add safe.directory $(TOP_DIR)/libbloom
++	git config --global --add safe.directory $(TOP_DIR)/libcork
++	git config --global --add safe.directory $(TOP_DIR)/libipset
+ 	$(RPM_DIR)/genrpm.sh -o $(outdir)
+-- 
+2.25.1
+

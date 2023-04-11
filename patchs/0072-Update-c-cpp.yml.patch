@@ -1,0 +1,29 @@
+From 8a54905e912f7ab47383d0450bc05ec3b52befa5 Mon Sep 17 00:00:00 2001
+From: jnxyatmjx <9018335+jnxyatmjx@users.noreply.github.com>
+Date: Tue, 4 Apr 2023 11:04:22 +0800
+Subject: [PATCH 72/85] Update c-cpp.yml
+
+---
+ .github/workflows/c-cpp.yml | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/.github/workflows/c-cpp.yml b/.github/workflows/c-cpp.yml
+index b47e19f..44fa837 100644
+--- a/.github/workflows/c-cpp.yml
++++ b/.github/workflows/c-cpp.yml
+@@ -44,10 +44,11 @@ jobs:
+         echo -e "$(nproc) thread compile"
+         cd bld_
+         make -j$(nproc) || make -j1 || make -j1 V=s
++        echo "::set-output name=stat::success"
+     
+     - name: upload bin files 
+       uses: actions/upload-artifact@v3
+-      if: steps.compilexx.outputs.status == 'success'
++      if: steps.compilexx.outputs.stat == 'success'
+       with:
+         name: ss-libev-bin
+         path: bld_/bin/
+-- 
+2.25.1
+

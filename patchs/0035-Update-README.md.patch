@@ -1,0 +1,26 @@
+From 90f21abc2db1204d6d3f1838aa1954b849f8a584 Mon Sep 17 00:00:00 2001
+From: Chen Shaoju <oshirisu.red@gmail.com>
+Date: Sun, 29 May 2022 01:08:38 +0800
+Subject: [PATCH 35/85] Update README.md
+
+Update the PKGBUILD url.
+---
+ README.md | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/README.md b/README.md
+index ca155f3..c6e5026 100644
+--- a/README.md
++++ b/README.md
+@@ -184,7 +184,7 @@ yum install gcc gettext autoconf libtool automake make pcre-devel asciidoc xmlto
+ sudo pacman -S shadowsocks-libev
+ ```
+ 
+-Please refer to downstream [PKGBUILD](https://projects.archlinux.org/svntogit/community.git/tree/trunk?h=packages/shadowsocks-libev)
++Please refer to downstream [PKGBUILD](https://github.com/archlinux/svntogit-community/blob/packages/shadowsocks-libev/trunk/PKGBUILD)
+ script for extra modifications and distribution-specific bugs.
+ 
+ ### NixOS
+-- 
+2.25.1
+

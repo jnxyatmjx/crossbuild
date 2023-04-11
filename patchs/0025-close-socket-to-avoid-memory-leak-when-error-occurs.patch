@@ -1,0 +1,30 @@
+From a19328a977464bd3748a699159351ab4b07f4df2 Mon Sep 17 00:00:00 2001
+From: Gilles Depeyrot <g.depeyrot@transacom.fr>
+Date: Thu, 15 Jul 2021 14:43:22 +0200
+Subject: [PATCH 25/85] close socket to avoid memory leak when error occurs
+
+---
+ src/plugin.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/plugin.c b/src/plugin.c
+index 48c614c..b67a9a4 100644
+--- a/src/plugin.c
++++ b/src/plugin.c
+@@ -313,11 +313,13 @@ get_local_port()
+     serv_addr.sin_addr.s_addr = INADDR_ANY;
+     serv_addr.sin_port        = 0;
+     if (bind(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
++        close(sock);
+         return 0;
+     }
+ 
+     socklen_t len = sizeof(serv_addr);
+     if (getsockname(sock, (struct sockaddr *)&serv_addr, &len) == -1) {
++        close(sock);
+         return 0;
+     }
+     if (close(sock) < 0) {
+-- 
+2.25.1
+

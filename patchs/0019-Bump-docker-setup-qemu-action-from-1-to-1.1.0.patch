@@ -1,0 +1,30 @@
+From 16867e1c73a9c839d5bcafa70a4222fef5bbd996 Mon Sep 17 00:00:00 2001
+From: "dependabot[bot]" <49699333+dependabot[bot]@users.noreply.github.com>
+Date: Wed, 12 May 2021 08:11:59 +0000
+Subject: [PATCH 19/85] Bump docker/setup-qemu-action from 1 to 1.1.0
+
+Bumps [docker/setup-qemu-action](https://github.com/docker/setup-qemu-action) from 1 to 1.1.0.
+- [Release notes](https://github.com/docker/setup-qemu-action/releases)
+- [Commits](https://github.com/docker/setup-qemu-action/compare/v1...v1.1.0)
+
+Signed-off-by: dependabot[bot] <support@github.com>
+---
+ .github/workflows/build.yml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/.github/workflows/build.yml b/.github/workflows/build.yml
+index 00ea6c9..bc10dee 100644
+--- a/.github/workflows/build.yml
++++ b/.github/workflows/build.yml
+@@ -17,7 +17,7 @@ jobs:
+         with:
+           submodules: true
+ 
+-      - uses: docker/setup-qemu-action@v1
++      - uses: docker/setup-qemu-action@v1.1.0
+       - uses: docker/setup-buildx-action@v1.3.0
+       - uses: docker/login-action@v1.9.0
+         with:
+-- 
+2.25.1
+

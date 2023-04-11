@@ -1,0 +1,30 @@
+From a4a8fc1e04ae325acd6a867cfd2f10cbae8cc4dc Mon Sep 17 00:00:00 2001
+From: "dependabot[bot]" <49699333+dependabot[bot]@users.noreply.github.com>
+Date: Wed, 12 May 2021 08:11:07 +0000
+Subject: [PATCH 17/85] Bump docker/login-action from 1 to 1.9.0
+
+Bumps [docker/login-action](https://github.com/docker/login-action) from 1 to 1.9.0.
+- [Release notes](https://github.com/docker/login-action/releases)
+- [Commits](https://github.com/docker/login-action/compare/v1...v1.9.0)
+
+Signed-off-by: dependabot[bot] <support@github.com>
+---
+ .github/workflows/build.yml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/.github/workflows/build.yml b/.github/workflows/build.yml
+index f45ce48..925a5a9 100644
+--- a/.github/workflows/build.yml
++++ b/.github/workflows/build.yml
+@@ -19,7 +19,7 @@ jobs:
+ 
+       - uses: docker/setup-qemu-action@v1
+       - uses: docker/setup-buildx-action@v1.3.0
+-      - uses: docker/login-action@v1
++      - uses: docker/login-action@v1.9.0
+         with:
+           password: ${{ secrets.DOCKER_PASSWORD }}
+           username: ${{ secrets.DOCKER_USERNAME }}
+-- 
+2.25.1
+

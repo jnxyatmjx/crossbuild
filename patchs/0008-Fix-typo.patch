@@ -1,0 +1,67 @@
+From b68157e6f72ed10c91c82554cdb82785295370fc Mon Sep 17 00:00:00 2001
+From: Not Sure <notsure2@protonmail.com>
+Date: Tue, 22 Dec 2020 10:24:33 +0200
+Subject: [PATCH 08/85] Fix typo.
+
+---
+ src/local.c  | 2 +-
+ src/redir.c  | 2 +-
+ src/server.c | 2 +-
+ src/tunnel.c | 2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/src/local.c b/src/local.c
+index 84bcc12..b1ab040 100644
+--- a/src/local.c
++++ b/src/local.c
+@@ -1742,7 +1742,7 @@ main(int argc, char **argv)
+     }
+ 
+     if (tcp_outgoing_rcvbuf != 0) {
+-        LOGI("set TCP outgoing connection receive buffer size to %d", tcp_outgoing_recvbuf);
++        LOGI("set TCP outgoing connection receive buffer size to %d", tcp_outgoing_rcvbuf);
+     }
+ 
+     if (plugin != NULL) {
+diff --git a/src/redir.c b/src/redir.c
+index 9c4c189..f1ad612 100644
+--- a/src/redir.c
++++ b/src/redir.c
+@@ -1244,7 +1244,7 @@ main(int argc, char **argv)
+     }
+ 
+     if (tcp_outgoing_rcvbuf != 0) {
+-        LOGI("set TCP outgoing connection receive buffer size to %d", tcp_outgoing_recvbuf);
++        LOGI("set TCP outgoing connection receive buffer size to %d", tcp_outgoing_rcvbuf);
+     }
+ 
+     if (plugin != NULL) {
+diff --git a/src/server.c b/src/server.c
+index a0d4b55..585ae80 100644
+--- a/src/server.c
++++ b/src/server.c
+@@ -1865,7 +1865,7 @@ main(int argc, char **argv)
+     }
+ 
+     if (tcp_outgoing_rcvbuf != 0) {
+-        LOGI("set TCP outgoing connection receive buffer size to %d", tcp_outgoing_recvbuf);
++        LOGI("set TCP outgoing connection receive buffer size to %d", tcp_outgoing_rcvbuf);
+     }
+ 
+     if (server_num == 0) {
+diff --git a/src/tunnel.c b/src/tunnel.c
+index faf8cf8..7a345f3 100644
+--- a/src/tunnel.c
++++ b/src/tunnel.c
+@@ -1183,7 +1183,7 @@ main(int argc, char **argv)
+     }
+ 
+     if (tcp_outgoing_rcvbuf != 0) {
+-        LOGI("set TCP outgoing connection receive buffer size to %d", tcp_outgoing_recvbuf);
++        LOGI("set TCP outgoing connection receive buffer size to %d", tcp_outgoing_rcvbuf);
+     }
+ 
+     if (plugin != NULL) {
+-- 
+2.25.1
+

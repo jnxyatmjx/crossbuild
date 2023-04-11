@@ -1,0 +1,24 @@
+From 6d64a97920de881fb58224c0fe206bdb49534e69 Mon Sep 17 00:00:00 2001
+From: jnxyatmjx <9018335+jnxyatmjx@users.noreply.github.com>
+Date: Tue, 4 Apr 2023 10:28:15 +0800
+Subject: [PATCH 68/85] Update c-cpp.yml
+
+---
+ .github/workflows/c-cpp.yml | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/.github/workflows/c-cpp.yml b/.github/workflows/c-cpp.yml
+index 31f5fe5..b3218b4 100644
+--- a/.github/workflows/c-cpp.yml
++++ b/.github/workflows/c-cpp.yml
+@@ -49,5 +49,5 @@ jobs:
+     - name: upload bin files 
+       uses: actions/upload-artifact@v3
+       with:
+-        name: shadowsocks-libev-artifact
+-        path: bld/bin/
++        name: ss-libev-bin
++        path: bld_/bin/
+-- 
+2.25.1
+

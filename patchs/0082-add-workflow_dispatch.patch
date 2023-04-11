@@ -1,0 +1,23 @@
+From 349bdcb9488cd2076c0fb32044dd0cd9ec6a1f52 Mon Sep 17 00:00:00 2001
+From: jnxyatmjx <jnxyatmjx@qq.com>
+Date: Tue, 4 Apr 2023 15:24:08 +0800
+Subject: [PATCH 82/85] add workflow_dispatch
+
+---
+ .github/workflows/commitlint.yml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/.github/workflows/commitlint.yml b/.github/workflows/commitlint.yml
+index db6bc6e..112f22d 100644
+--- a/.github/workflows/commitlint.yml
++++ b/.github/workflows/commitlint.yml
+@@ -1,5 +1,5 @@
+ name: Lint Commit Messages
+-on: [pull_request]
++on: [pull_request,workflow_dispatch]
+ 
+ jobs:
+   commitlint:
+-- 
+2.25.1
+

@@ -1,0 +1,44 @@
+From 49ead5e570f27296a880005b9a2d15541b93b407 Mon Sep 17 00:00:00 2001
+From: Gilles Depeyrot <g.depeyrot@transacom.fr>
+Date: Thu, 15 Jul 2021 14:43:22 +0200
+Subject: [PATCH 26/85] apply memory leak fix for create_and_bind to
+ create_server_socket
+
+---
+ src/manager.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/src/manager.c b/src/manager.c
+index bcbcbdc..fe50512 100644
+--- a/src/manager.c
++++ b/src/manager.c
+@@ -442,7 +442,7 @@ create_and_bind(const char *host, const char *port, int protocol)
+         }
+     }
+ 
+-    if (!result) {
++    if (result != NULL) {
+         freeaddrinfo(result);
+     }
+ 
+@@ -837,13 +837,15 @@ create_server_socket(const char *host, const char *port)
+         close(server_sock);
+     }
+ 
++    if (result != NULL) {
++        freeaddrinfo(result);
++    }
++
+     if (rp == NULL) {
+         LOGE("cannot bind");
+         return -1;
+     }
+ 
+-    freeaddrinfo(result);
+-
+     return server_sock;
+ }
+ 
+-- 
+2.25.1
+

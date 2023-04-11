@@ -1,0 +1,316 @@
+From d61d09aa0caecf31a39660f3a8f0676e53db129e Mon Sep 17 00:00:00 2001
+From: Maxim Galaganov <max@internet.ru>
+Date: Wed, 22 Jun 2022 17:47:40 +0300
+Subject: [PATCH 38/85] Detect kernel support for MPTCP at runtime
+
+---
+ src/jconf.c    |  2 +-
+ src/local.c    | 19 ++++++++-----------
+ src/netutils.h |  9 +++++++--
+ src/redir.c    | 19 ++++++++-----------
+ src/server.c   | 16 +++++++---------
+ src/tunnel.c   | 18 ++++++++----------
+ src/utils.c    | 17 +++++++++++++++++
+ src/utils.h    |  1 +
+ 8 files changed, 57 insertions(+), 44 deletions(-)
+
+diff --git a/src/jconf.c b/src/jconf.c
+index 5657c88..d2815ef 100644
+--- a/src/jconf.c
++++ b/src/jconf.c
+@@ -340,7 +340,7 @@ read_jconf(const char *file)
+             } else if (strcmp(name, "mptcp") == 0) {
+                 check_json_value_type(value, json_boolean,
+                                       "invalid config file: option 'mptcp' must be a boolean");
+-                conf.mptcp = value->u.boolean;
++                conf.mptcp = get_mptcp(value->u.boolean);
+             } else if (strcmp(name, "ipv6_first") == 0) {
+                 check_json_value_type(value, json_boolean,
+                                       "invalid config file: option 'ipv6_first' must be a boolean");
+diff --git a/src/local.c b/src/local.c
+index 200c7c9..fa1ca7b 100644
+--- a/src/local.c
++++ b/src/local.c
+@@ -1273,13 +1273,10 @@ create_remote(listen_ctx_t *listener,
+     }
+ 
+     int protocol = IPPROTO_TCP;
+-#ifdef IPPROTO_MPTCP
+-    if (listener->mptcp > 0) {
+-        protocol = IPPROTO_MPTCP;
++    if (listener->mptcp < 0) {
++        protocol = IPPROTO_MPTCP; // Enable upstream MPTCP
+     }
+-#endif
+     int remotefd = socket(remote_addr->sa_family, SOCK_STREAM, protocol);
+-
+     if (remotefd == -1) {
+         ERROR("socket");
+         return NULL;
+@@ -1291,11 +1288,11 @@ create_remote(listen_ctx_t *listener,
+     setsockopt(remotefd, SOL_SOCKET, SO_NOSIGPIPE, &opt, sizeof(opt));
+ #endif
+ 
+-#ifndef IPPROTO_MPTCP
++    // Enable out-of-tree MPTCP
+     if (listener->mptcp > 1) {
+         int err = setsockopt(remotefd, SOL_TCP, listener->mptcp, &opt, sizeof(opt));
+         if (err == -1) {
+-            ERROR("failed to enable multipath TCP");
++            ERROR("failed to enable out-of-tree multipath TCP");
+         }
+     } else if (listener->mptcp == 1) {
+         int i = 0;
+@@ -1307,10 +1304,9 @@ create_remote(listen_ctx_t *listener,
+             i++;
+         }
+         if (listener->mptcp == 0) {
+-            ERROR("failed to enable multipath TCP");
++            ERROR("failed to enable out-of-tree multipath TCP");
+         }
+     }
+-#endif
+ 
+     if (tcp_outgoing_sndbuf > 0) {
+         setsockopt(remotefd, SOL_SOCKET, SO_SNDBUF, &tcp_outgoing_sndbuf, sizeof(int));
+@@ -1499,8 +1495,9 @@ main(int argc, char **argv)
+             LOGI("set MTU to %d", mtu);
+             break;
+         case GETOPT_VAL_MPTCP:
+-            mptcp = 1;
+-            LOGI("enable multipath TCP");
++            mptcp = get_mptcp(1);
++            if (mptcp)
++                LOGI("enable multipath TCP (%s)", mptcp > 0 ? "out-of-tree" : "upstream");
+             break;
+         case GETOPT_VAL_NODELAY:
+             no_delay = 1;
+diff --git a/src/netutils.h b/src/netutils.h
+index 5360300..47320a0 100644
+--- a/src/netutils.h
++++ b/src/netutils.h
+@@ -60,14 +60,19 @@ typedef struct {
+     char *port;
+ } ss_addr_t;
+ 
++// Be compatible with older libc.
+ #ifndef IPPROTO_MPTCP
+-/* MPTCP_ENABLED setsockopt values for kernel 4 & 3, best behaviour to be independant of kernel version is to test from newest to the latest values */
++#define IPPROTO_MPTCP 262
++#endif
++
++/* MPTCP_ENABLED setsockopt values for out-of-tree kernel 4 & 3, best behaviour
++ * to be independent of kernel version is to test from newest to latest values.
++ */
+ #ifndef MPTCP_ENABLED
+ static const char mptcp_enabled_values[] = { 42, 26, 0 };
+ #else
+ static const char mptcp_enabled_values[] = { MPTCP_ENABLED, 0 };
+ #endif
+-#endif
+ 
+ #ifndef UPDATE_INTERVAL
+ #define UPDATE_INTERVAL 5
+diff --git a/src/redir.c b/src/redir.c
+index 81606b0..d36fe3f 100644
+--- a/src/redir.c
++++ b/src/redir.c
+@@ -771,11 +771,9 @@ accept_cb(EV_P_ ev_io *w, int revents)
+     struct sockaddr *remote_addr = listener->remote_addr[index];
+ 
+     int protocol = IPPROTO_TCP;
+-#ifdef IPPROTO_MPTCP
+-    if (listener->mptcp > 0) {
+-	protocol = IPPROTO_MPTCP;
++    if (listener->mptcp < 0) {
++        protocol = IPPROTO_MPTCP; // Enable upstream MPTCP
+     }
+-#endif
+     int remotefd = socket(remote_addr->sa_family, SOCK_STREAM, protocol);
+     if (remotefd == -1) {
+         ERROR("socket");
+@@ -814,12 +812,11 @@ accept_cb(EV_P_ ev_io *w, int revents)
+ #endif
+     }
+ 
+-#ifndef IPPROTO_MPTCP
+-    // Enable MPTCP
++    // Enable out-of-tree MPTCP
+     if (listener->mptcp > 1) {
+         int err = setsockopt(remotefd, SOL_TCP, listener->mptcp, &opt, sizeof(opt));
+         if (err == -1) {
+-            ERROR("failed to enable multipath TCP");
++            ERROR("failed to enable out-of-tree multipath TCP");
+         }
+     } else if (listener->mptcp == 1) {
+         int i = 0;
+@@ -831,10 +828,9 @@ accept_cb(EV_P_ ev_io *w, int revents)
+             i++;
+         }
+         if (listener->mptcp == 0) {
+-            ERROR("failed to enable multipath TCP");
++            ERROR("failed to enable out-of-tree multipath TCP");
+         }
+     }
+-#endif
+ 
+     if (tcp_outgoing_sndbuf > 0) {
+         setsockopt(remotefd, SOL_SOCKET, SO_SNDBUF, &tcp_outgoing_sndbuf, sizeof(int));
+@@ -959,8 +955,9 @@ main(int argc, char **argv)
+             LOGI("set MTU to %d", mtu);
+             break;
+         case GETOPT_VAL_MPTCP:
+-            mptcp = 1;
+-            LOGI("enable multipath TCP");
++            mptcp = get_mptcp(1);
++            if (mptcp)
++                LOGI("enable multipath TCP (%s)", mptcp > 0 ? "out-of-tree" : "upstream");
+             break;
+         case GETOPT_VAL_NODELAY:
+             no_delay = 1;
+diff --git a/src/server.c b/src/server.c
+index bf45333..73b6599 100644
+--- a/src/server.c
++++ b/src/server.c
+@@ -595,11 +595,9 @@ create_and_bind(const char *host, const char *port, int mptcp)
+ 
+     for (/*rp = result*/; rp != NULL; rp = rp->ai_next) {
+         int protocol = rp->ai_protocol;
+-#ifdef IPPROTO_MPTCP
+-        if (mptcp == 1) {
+-            protocol = IPPROTO_MPTCP;
++        if (mptcp < 0) {
++            protocol = IPPROTO_MPTCP; // Enable upstream MPTCP
+         }
+-#endif
+         listen_sock = socket(rp->ai_family, rp->ai_socktype, protocol);
+         if (listen_sock == -1) {
+             continue;
+@@ -622,7 +620,7 @@ create_and_bind(const char *host, const char *port, int mptcp)
+             }
+         }
+ 
+-#ifndef IPPROTO_MPTCP
++        // Enable out-of-tree mptcp
+         if (mptcp == 1) {
+             int i = 0;
+             while ((mptcp = mptcp_enabled_values[i]) > 0) {
+@@ -633,10 +631,9 @@ create_and_bind(const char *host, const char *port, int mptcp)
+                 i++;
+             }
+             if (mptcp == 0) {
+-                ERROR("failed to enable multipath TCP");
++                ERROR("failed to enable out-of-tree multipath TCP");
+             }
+         }
+-#endif
+ 
+         s = bind(listen_sock, rp->ai_addr, rp->ai_addrlen);
+         if (s == 0) {
+@@ -1874,8 +1871,9 @@ main(int argc, char **argv)
+             plugin_opts = optarg;
+             break;
+         case GETOPT_VAL_MPTCP:
+-            mptcp = 1;
+-            LOGI("enable multipath TCP");
++            mptcp = get_mptcp(1);
++            if (mptcp)
++                LOGI("enable multipath TCP (%s)", mptcp > 0 ? "out-of-tree" : "upstream");
+             break;
+         case GETOPT_VAL_KEY:
+             key = optarg;
+diff --git a/src/tunnel.c b/src/tunnel.c
+index 0b68f50..99ed412 100644
+--- a/src/tunnel.c
++++ b/src/tunnel.c
+@@ -737,11 +737,9 @@ accept_cb(EV_P_ ev_io *w, int revents)
+     struct sockaddr *remote_addr = listener->remote_addr[index];
+ 
+     int protocol = IPPROTO_TCP;
+-#ifdef IPPROTO_MPTCP
+-    if (listener->mptcp > 0) {
+-        protocol = IPPROTO_MPTCP;
++    if (listener->mptcp < 0) {
++        protocol = IPPROTO_MPTCP; // Enable upstream MPTCP
+     }
+-#endif
+     int remotefd = socket(remote_addr->sa_family, SOCK_STREAM, protocol);
+     if (remotefd == -1) {
+         ERROR("socket");
+@@ -773,11 +771,11 @@ accept_cb(EV_P_ ev_io *w, int revents)
+     setsockopt(remotefd, SOL_SOCKET, SO_NOSIGPIPE, &opt, sizeof(opt));
+ #endif
+ 
+-#ifndef IPPROTO_MPTCP
++    // Enable out-of-tree MPTCP
+     if (listener->mptcp > 1) {
+         int err = setsockopt(remotefd, SOL_TCP, listener->mptcp, &opt, sizeof(opt));
+         if (err == -1) {
+-            ERROR("failed to enable multipath TCP");
++            ERROR("failed to enable out-of-tree multipath TCP");
+         }
+     } else if (listener->mptcp == 1) {
+         int i = 0;
+@@ -789,10 +787,9 @@ accept_cb(EV_P_ ev_io *w, int revents)
+             i++;
+         }
+         if (listener->mptcp == 0) {
+-            ERROR("failed to enable multipath TCP");
++            ERROR("failed to enable out-of-tree multipath TCP");
+         }
+     }
+-#endif
+ 
+     if (tcp_outgoing_sndbuf > 0) {
+         setsockopt(remotefd, SOL_SOCKET, SO_SNDBUF, &tcp_outgoing_sndbuf, sizeof(int));
+@@ -956,8 +953,9 @@ main(int argc, char **argv)
+             LOGI("set MTU to %d", mtu);
+             break;
+         case GETOPT_VAL_MPTCP:
+-            mptcp = 1;
+-            LOGI("enable multipath TCP");
++            mptcp = get_mptcp(1);
++            if (mptcp)
++                LOGI("enable multipath TCP (%s)", mptcp > 0 ? "out-of-tree" : "upstream");
+             break;
+         case GETOPT_VAL_NODELAY:
+             no_delay = 1;
+diff --git a/src/utils.c b/src/utils.c
+index c8daebb..d3ff2ab 100644
+--- a/src/utils.c
++++ b/src/utils.c
+@@ -578,3 +578,20 @@ load16_be(const void *s)
+     return ((uint16_t)in[0] << 8)
+            | ((uint16_t)in[1]);
+ }
++
++int
++get_mptcp(int enable)
++{
++    const char oldpath[] = "/proc/sys/net/mptcp/mptcp_enabled";
++
++    if (enable) {
++        // Check if kernel has out-of-tree MPTCP support.
++        if (access(oldpath, F_OK) != -1)
++            return 1;
++
++        // Otherwise, just use IPPROTO_MPTCP.
++        return -1;
++    }
++
++    return 0;
++}
+diff --git a/src/utils.h b/src/utils.h
+index 450e3ec..1df24c1 100644
+--- a/src/utils.h
++++ b/src/utils.h
+@@ -250,5 +250,6 @@ void *ss_realloc(void *ptr, size_t new_size);
+ int ss_is_ipv6addr(const char *addr);
+ char *get_default_conf(void);
+ uint16_t load16_be(const void *s);
++int get_mptcp(int enable);
+ 
+ #endif // _UTILS_H
+-- 
+2.25.1
+

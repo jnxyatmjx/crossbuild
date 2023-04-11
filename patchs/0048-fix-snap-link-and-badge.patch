@@ -1,0 +1,24 @@
+From 288cba784e798d73b289c08c53af193d04c16db4 Mon Sep 17 00:00:00 2001
+From: Bill Zhong <billzhong@users.noreply.github.com>
+Date: Tue, 29 Nov 2022 13:31:39 -0330
+Subject: [PATCH 48/85] fix snap link and badge
+
+---
+ README.md | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/README.md b/README.md
+index db11e6a..8a874db 100644
+--- a/README.md
++++ b/README.md
+@@ -1,6 +1,6 @@
+ # shadowsocks-libev
+ 
+-[![Build Status](https://travis-ci.com/shadowsocks/shadowsocks-libev.svg?branch=master)](https://travis-ci.com/shadowsocks/shadowsocks-libev) [![Snap Status](https://build.snapcraft.io/badge/shadowsocks/shadowsocks-libev.svg)](https://build.snapcraft.io/user/shadowsocks/shadowsocks-libev)
++[![Build Status](https://travis-ci.com/shadowsocks/shadowsocks-libev.svg?branch=master)](https://travis-ci.com/shadowsocks/shadowsocks-libev) [![Snap Status](https://snapcraft.io/shadowsocks-libev/badge.svg)](https://snapcraft.io/shadowsocks-libev)
+ 
+ ## Intro
+ 
+-- 
+2.25.1
+

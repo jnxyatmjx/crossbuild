@@ -1,0 +1,20 @@
+From aed81a1c2b44505563c5c969b4546bebd4745dde Mon Sep 17 00:00:00 2001
+From: Max Lv <max.c.lv@gmail.com>
+Date: Sun, 13 Dec 2020 18:19:43 +0800
+Subject: [PATCH 04/85] Create FUNDING.yml
+
+---
+ .github/FUNDING.yml | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 100644 .github/FUNDING.yml
+
+diff --git a/.github/FUNDING.yml b/.github/FUNDING.yml
+new file mode 100644
+index 0000000..c175b15
+--- /dev/null
++++ b/.github/FUNDING.yml
+@@ -0,0 +1 @@
++custom: ['https://crowdfunding.lfx.linuxfoundation.org/projects/shadowsocks']
+-- 
+2.25.1
+

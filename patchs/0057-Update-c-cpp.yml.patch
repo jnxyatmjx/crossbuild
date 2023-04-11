@@ -1,0 +1,25 @@
+From 052acf25c8af85f0eb85657a42ca8a1d182ecc67 Mon Sep 17 00:00:00 2001
+From: jnxyatmjx <9018335+jnxyatmjx@users.noreply.github.com>
+Date: Mon, 3 Apr 2023 16:00:37 +0800
+Subject: [PATCH 57/85] Update c-cpp.yml
+
+fix bug
+---
+ .github/workflows/c-cpp.yml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/.github/workflows/c-cpp.yml b/.github/workflows/c-cpp.yml
+index 8c6ca5e..2c1153d 100644
+--- a/.github/workflows/c-cpp.yml
++++ b/.github/workflows/c-cpp.yml
+@@ -24,6 +24,7 @@ jobs:
+     - name: configure
+       run: |
+         sudo apt-get install --no-install-recommends gettext build-essential autoconf libtool libpcre3-dev asciidoc xmlto libev-dev libc-ares-dev automake libmbedtls-dev libsodium-dev pkg-config
++        git submodule update --init --recursive
+         mkdir bld_ && cd bld_ && cmake ../
+     - name: make
+       run: make -j4
+-- 
+2.25.1
+

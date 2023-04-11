@@ -1,0 +1,28 @@
+From 1e158ab1a6350d1166dd643db1e537db5822dfb8 Mon Sep 17 00:00:00 2001
+From: jnxyatmjx <9018335+jnxyatmjx@users.noreply.github.com>
+Date: Tue, 4 Apr 2023 12:33:52 +0800
+Subject: [PATCH 73/85] Update c-cpp.yml
+
+---
+ .github/workflows/c-cpp.yml | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/.github/workflows/c-cpp.yml b/.github/workflows/c-cpp.yml
+index 44fa837..fa155ef 100644
+--- a/.github/workflows/c-cpp.yml
++++ b/.github/workflows/c-cpp.yml
+@@ -60,3 +60,11 @@ jobs:
+       env:
+         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
++        
++    - name: generate release tag
++      id: tag
++      if: (!cancelled())
++      run: |
++        echo "::set-output name=release_tag::$(date +"%Y.%m.%d-%H%M%S")"
++        touch release.txt
++        echo "::set-output name=stat::success"
+-- 
+2.25.1
+

@@ -1,0 +1,26 @@
+From c34221f98c82ebd5c6141ef4fb186b5254a20947 Mon Sep 17 00:00:00 2001
+From: jnxyatmjx <jnxyatmjx@qq.com>
+Date: Tue, 4 Apr 2023 15:10:42 +0800
+Subject: [PATCH 80/85] fix time zone
+
+---
+ .github/workflows/c-cpp.yml | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/.github/workflows/c-cpp.yml b/.github/workflows/c-cpp.yml
+index 650dc85..129d715 100644
+--- a/.github/workflows/c-cpp.yml
++++ b/.github/workflows/c-cpp.yml
+@@ -37,7 +37,8 @@ jobs:
+     
+     - name: where i am
+       run: |
+-        echo -e "github workspcace $GITHUB_WORKSPACE"
++        sudo timedatectl set-timezone Asia/Shanghai
++        echo -e "workspcace->$GITHUB_WORKSPACE"
+     
+     - name: cmake-configure
+       run: |
+-- 
+2.25.1
+

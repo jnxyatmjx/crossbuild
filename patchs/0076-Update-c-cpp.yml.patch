@@ -1,0 +1,32 @@
+From 8c0231d4b1eeeba22013069b4402a5fd89d329d1 Mon Sep 17 00:00:00 2001
+From: jnxyatmjx <9018335+jnxyatmjx@users.noreply.github.com>
+Date: Tue, 4 Apr 2023 13:39:36 +0800
+Subject: [PATCH 76/85] Update c-cpp.yml
+
+---
+ .github/workflows/c-cpp.yml | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/.github/workflows/c-cpp.yml b/.github/workflows/c-cpp.yml
+index a63e22a..195c6a6 100644
+--- a/.github/workflows/c-cpp.yml
++++ b/.github/workflows/c-cpp.yml
+@@ -69,5 +69,14 @@ jobs:
+         #echo "::set-output name=release_tag::$(date +"%Y.%m.%d-%H%M%S")" #command is deprecated
+         echo -e "release_tag=$(date +"%Y.%m.%d-%H%M%S")" >> $GITHUB_OUTPUT
+         touch release.txt
+-        #echo "::set-output name=stat::success"
+         echo -e "stat=success" >> $GITHUB_OUTPUT
++        
++    - name: push to release
++      uses: softprops/action-gh-release@v1
++      if: steps.tag.outputs.status == 'success' && !cancelled()
++      env:
++        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
++      with:
++        tag_name: ${{ steps.tag.outputs.release_tag }}
++        body_path: release.txt
++        files: bld_/bin/*
+-- 
+2.25.1
+

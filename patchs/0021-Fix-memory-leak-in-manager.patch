@@ -1,0 +1,24 @@
+From ed234026377e27d59825e9bef1375032ff9415aa Mon Sep 17 00:00:00 2001
+From: lixingcong <lixingcong@live.com>
+Date: Wed, 17 Mar 2021 10:34:47 +0800
+Subject: [PATCH 21/85] Fix memory leak in manager
+
+---
+ src/manager.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/manager.c b/src/manager.c
+index c38d252..bcbcbdc 100644
+--- a/src/manager.c
++++ b/src/manager.c
+@@ -1281,6 +1281,7 @@ main(int argc, char **argv)
+     ev_signal_stop(EV_DEFAULT, &sigint_watcher);
+     ev_signal_stop(EV_DEFAULT, &sigterm_watcher);
+     ss_free(working_dir);
++    free_addr(&ip_addr);
+ 
+     return 0;
+ }
+-- 
+2.25.1
+

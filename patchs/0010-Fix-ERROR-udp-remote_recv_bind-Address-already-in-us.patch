@@ -1,0 +1,30 @@
+From 13f472077d52c147057a198e552ea8cd6791631a Mon Sep 17 00:00:00 2001
+From: Jared Pyzynski <jhambersob@gmail.com>
+Date: Fri, 29 Jan 2021 07:27:11 -0800
+Subject: [PATCH 10/85] Fix "ERROR: [udp] remote_recv_bind: Address already in
+ use" when multiple `reuse_port`-enabled `ss-redir` instances are listening on
+ the same address
+
+---
+ src/udprelay.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/src/udprelay.c b/src/udprelay.c
+index 34c333b..e9d7db0 100644
+--- a/src/udprelay.c
++++ b/src/udprelay.c
+@@ -869,6 +869,11 @@ remote_recv_cb(EV_P_ ev_io *w, int revents)
+         close(src_fd);
+         goto CLEAN_UP;
+     }
++    if (reuse_port) {
++        if (set_reuseport(src_fd) != 0) {
++            ERROR("[udp] remote_recv port_reuse");
++        }
++    }
+ #ifdef IP_TOS
+     // Set QoS flag
+     int tos   = 46 << 2;
+-- 
+2.25.1
+

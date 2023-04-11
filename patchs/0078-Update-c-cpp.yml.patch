@@ -1,0 +1,26 @@
+From 2588c289f17c6892add46dc9d40eb61799a3d54d Mon Sep 17 00:00:00 2001
+From: jnxyatmjx <9018335+jnxyatmjx@users.noreply.github.com>
+Date: Tue, 4 Apr 2023 13:50:49 +0800
+Subject: [PATCH 78/85] Update c-cpp.yml
+
+fix release 403 error
+---
+ .github/workflows/c-cpp.yml | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/.github/workflows/c-cpp.yml b/.github/workflows/c-cpp.yml
+index 8100663..7f97346 100644
+--- a/.github/workflows/c-cpp.yml
++++ b/.github/workflows/c-cpp.yml
+@@ -20,6 +20,8 @@ jobs:
+     strategy:
+       matrix:
+         os: [ "ubuntu-20.04" ]
++    permissions:
++      contents: write
+ 
+     steps:
+     # This step references the directory that contains the action.
+-- 
+2.25.1
+

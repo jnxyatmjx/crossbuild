@@ -1,0 +1,33 @@
+From 661aaef7d1abb9f860a17212e64541e432440354 Mon Sep 17 00:00:00 2001
+From: jnxyatmjx <jnxyatmjx@qq.com>
+Date: Tue, 4 Apr 2023 15:03:43 +0800
+Subject: [PATCH 79/85] update action yaml
+
+---
+ .github/workflows/c-cpp.yml | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/.github/workflows/c-cpp.yml b/.github/workflows/c-cpp.yml
+index 7f97346..650dc85 100644
+--- a/.github/workflows/c-cpp.yml
++++ b/.github/workflows/c-cpp.yml
+@@ -1,3 +1,4 @@
++#ref https://github.com/P3TERX/Actions-OpenWrt/blob/main/.github/workflows/build-openwrt.yml
+ name: C/C++ CI
+ 
+ on:
+@@ -28,6 +29,11 @@ jobs:
+       #- uses: ./.github/actions/hello-world-action
+     # This step checks out a copy of your repository.
+     - uses: actions/checkout@v3
++      with:
++          # by default, it uses a depth of 1
++          # this fetches all history so that we can read each commit
++          fetch-depth: 0
++          submodules: true
+     
+     - name: where i am
+       run: |
+-- 
+2.25.1
+

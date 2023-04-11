@@ -1,0 +1,31 @@
+From 3b3ba962103c69e705e61ea6e5afc6a6c7dbd649 Mon Sep 17 00:00:00 2001
+From: "dependabot[bot]" <49699333+dependabot[bot]@users.noreply.github.com>
+Date: Wed, 12 May 2021 05:15:57 +0000
+Subject: [PATCH 18/85] Bump actions/checkout from 2 to 2.3.4
+
+Bumps [actions/checkout](https://github.com/actions/checkout) from 2 to 2.3.4.
+- [Release notes](https://github.com/actions/checkout/releases)
+- [Changelog](https://github.com/actions/checkout/blob/main/CHANGELOG.md)
+- [Commits](https://github.com/actions/checkout/compare/v2...v2.3.4)
+
+Signed-off-by: dependabot[bot] <support@github.com>
+---
+ .github/workflows/build.yml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/.github/workflows/build.yml b/.github/workflows/build.yml
+index 925a5a9..00ea6c9 100644
+--- a/.github/workflows/build.yml
++++ b/.github/workflows/build.yml
+@@ -13,7 +13,7 @@ jobs:
+   build:
+     runs-on: ubuntu-latest
+     steps:
+-      - uses: actions/checkout@v2
++      - uses: actions/checkout@v2.3.4
+         with:
+           submodules: true
+ 
+-- 
+2.25.1
+

@@ -1,0 +1,26 @@
+From 4899b4f99e3b8447a75e2c968cd01df42108ba82 Mon Sep 17 00:00:00 2001
+From: jnxyatmjx <9018335+jnxyatmjx@users.noreply.github.com>
+Date: Tue, 4 Apr 2023 10:12:37 +0800
+Subject: [PATCH 67/85] Update c-cpp.yml
+
+---
+ .github/workflows/c-cpp.yml | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/.github/workflows/c-cpp.yml b/.github/workflows/c-cpp.yml
+index 15a075a..31f5fe5 100644
+--- a/.github/workflows/c-cpp.yml
++++ b/.github/workflows/c-cpp.yml
+@@ -45,3 +45,9 @@ jobs:
+       env:
+         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
++    
++    - name: upload bin files 
++      uses: actions/upload-artifact@v3
++      with:
++        name: shadowsocks-libev-artifact
++        path: bld/bin/
+-- 
+2.25.1
+

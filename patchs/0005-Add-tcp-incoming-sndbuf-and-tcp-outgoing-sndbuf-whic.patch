@@ -1,0 +1,435 @@
+From 5617841694911cd21254a061a563abb6b3ea78c0 Mon Sep 17 00:00:00 2001
+From: Not Sure <notsure2@protonmail.com>
+Date: Tue, 22 Dec 2020 08:54:31 +0200
+Subject: [PATCH 05/85] Add --tcp-incoming-sndbuf and --tcp-outgoing-sndbuf
+ which allow precise control over TCP send buffers.
+
+- This is very useful in advanced scenarios such as ss-redir or chaining of servers using TPROXY
+  to avoid bufferbloat-like performance degradation due to default large buffers of OS.
+---
+ src/common.h |  2 ++
+ src/jconf.h  |  2 ++
+ src/local.c  | 40 ++++++++++++++++++++++++++++++++++++++++
+ src/redir.c  | 40 ++++++++++++++++++++++++++++++++++++++++
+ src/server.c | 41 +++++++++++++++++++++++++++++++++++++++++
+ src/tunnel.c | 40 ++++++++++++++++++++++++++++++++++++++++
+ src/utils.c  |  4 ++++
+ 7 files changed, 169 insertions(+)
+
+diff --git a/src/common.h b/src/common.h
+index 14f1d8d..e101f49 100644
+--- a/src/common.h
++++ b/src/common.h
+@@ -71,6 +71,8 @@ enum {
+     GETOPT_VAL_MANAGER_ADDRESS,
+     GETOPT_VAL_EXECUTABLE,
+     GETOPT_VAL_WORKDIR,
++    GETOPT_VAL_TCP_INCOMING_SNDBUF,
++    GETOPT_VAL_TCP_OUTGOING_SNDBUF
+ };
+ 
+ #endif // _COMMON_H
+diff --git a/src/jconf.h b/src/jconf.h
+index 4bf7f5e..e48bfe8 100644
+--- a/src/jconf.h
++++ b/src/jconf.h
+@@ -72,6 +72,8 @@ typedef struct {
+     char *plugin_opts;
+     int fast_open;
+     int reuse_port;
++    int tcp_incoming_sndbuf;
++    int tcp_outgoing_sndbuf;
+     int nofile;
+     char *nameserver;
+     int dscp_num;
+diff --git a/src/local.c b/src/local.c
+index de19a1d..7f027da 100644
+--- a/src/local.c
++++ b/src/local.c
+@@ -79,6 +79,8 @@
+ 
+ int verbose    = 0;
+ int reuse_port = 0;
++int tcp_incoming_sndbuf = 0;
++int tcp_outgoing_sndbuf = 0;
+ 
+ #ifdef __ANDROID__
+ int vpn        = 0;
+@@ -1300,6 +1302,10 @@ create_remote(listen_ctx_t *listener,
+         }
+     }
+ 
++    if (tcp_outgoing_sndbuf > 0) {
++        setsockopt(remotefd, SOL_SOCKET, SO_SNDBUF, &tcp_outgoing_sndbuf, sizeof(int));
++    }
++
+     // Setup
+     setnonblocking(remotefd);
+ #ifdef SET_INTERFACE
+@@ -1390,6 +1396,10 @@ accept_cb(EV_P_ ev_io *w, int revents)
+     setsockopt(serverfd, SOL_SOCKET, SO_NOSIGPIPE, &opt, sizeof(opt));
+ #endif
+ 
++    if (tcp_incoming_sndbuf > 0) {
++        setsockopt(serverfd, SOL_SOCKET, SO_SNDBUF, &tcp_incoming_sndbuf, sizeof(int));
++    }
++
+     server_t *server = new_server(serverfd);
+     server->listener = listener;
+ 
+@@ -1430,6 +1440,8 @@ main(int argc, char **argv)
+ 
+     static struct option long_options[] = {
+         { "reuse-port",  no_argument,       NULL, GETOPT_VAL_REUSE_PORT  },
++        { "tcp-incoming-sndbuf", required_argument, NULL, GETOPT_VAL_TCP_INCOMING_SNDBUF },
++        { "tcp-outgoing-sndbuf", required_argument, NULL, GETOPT_VAL_TCP_OUTGOING_SNDBUF },
+         { "fast-open",   no_argument,       NULL, GETOPT_VAL_FAST_OPEN   },
+         { "no-delay",    no_argument,       NULL, GETOPT_VAL_NODELAY     },
+         { "acl",         required_argument, NULL, GETOPT_VAL_ACL         },
+@@ -1486,6 +1498,12 @@ main(int argc, char **argv)
+         case GETOPT_VAL_REUSE_PORT:
+             reuse_port = 1;
+             break;
++        case GETOPT_VAL_TCP_INCOMING_SNDBUF:
++            tcp_incoming_sndbuf = atoi(optarg);
++            break;
++        case GETOPT_VAL_TCP_OUTGOING_SNDBUF:
++            tcp_outgoing_sndbuf = atoi(optarg);
++            break;
+         case 's':
+             if (remote_num < MAX_REMOTE_NUM) {
+                 parse_addr(optarg, &remote_addr[remote_num++]);
+@@ -1613,6 +1631,12 @@ main(int argc, char **argv)
+         if (reuse_port == 0) {
+             reuse_port = conf->reuse_port;
+         }
++        if (tcp_incoming_sndbuf == 0) {
++            tcp_incoming_sndbuf = conf->tcp_incoming_sndbuf;
++        }
++        if (tcp_outgoing_sndbuf == 0) {
++            tcp_outgoing_sndbuf = conf->tcp_outgoing_sndbuf;
++        }
+         if (fast_open == 0) {
+             fast_open = conf->fast_open;
+         }
+@@ -1665,6 +1689,22 @@ main(int argc, char **argv)
+     winsock_init();
+ #endif
+ 
++    if (tcp_incoming_sndbuf != 0 && tcp_incoming_sndbuf < SOCKET_BUF_SIZE) {
++        tcp_incoming_sndbuf = 0;
++    }
++
++    if (tcp_incoming_sndbuf != 0) {
++        LOGI("set TCP incoming connection send buffer size to %d", tcp_incoming_sndbuf);
++    }
++
++    if (tcp_outgoing_sndbuf != 0 && tcp_outgoing_sndbuf < SOCKET_BUF_SIZE) {
++        tcp_outgoing_sndbuf = 0;
++    }
++
++    if (tcp_outgoing_sndbuf != 0) {
++        LOGI("set TCP outgoing connection send buffer size to %d", tcp_outgoing_sndbuf);
++    }
++
+     if (plugin != NULL) {
+         uint16_t port = get_local_port();
+         if (port == 0) {
+diff --git a/src/redir.c b/src/redir.c
+index 0c33d76..522d200 100644
+--- a/src/redir.c
++++ b/src/redir.c
+@@ -89,6 +89,8 @@ static void close_and_free_server(EV_P_ server_t *server);
+ 
+ int verbose    = 0;
+ int reuse_port = 0;
++int tcp_incoming_sndbuf = 0;
++int tcp_outgoing_sndbuf = 0;
+ 
+ static crypto_t *crypto;
+ 
+@@ -755,6 +757,10 @@ accept_cb(EV_P_ ev_io *w, int revents)
+     setsockopt(serverfd, SOL_SOCKET, SO_NOSIGPIPE, &opt, sizeof(opt));
+ #endif
+ 
++    if (tcp_incoming_sndbuf > 0) {
++        setsockopt(serverfd, SOL_SOCKET, SO_SNDBUF, &tcp_incoming_sndbuf, sizeof(int));
++    }
++
+     int index                    = rand() % listener->remote_num;
+     struct sockaddr *remote_addr = listener->remote_addr[index];
+ 
+@@ -814,6 +820,10 @@ accept_cb(EV_P_ ev_io *w, int revents)
+         }
+     }
+ 
++    if (tcp_outgoing_sndbuf > 0) {
++        setsockopt(remotefd, SOL_SOCKET, SO_SNDBUF, &tcp_outgoing_sndbuf, sizeof(int));
++    }
++
+     server_t *server = new_server(serverfd);
+     remote_t *remote = new_remote(remotefd, listener->timeout);
+     server->remote   = remote;
+@@ -903,6 +913,8 @@ main(int argc, char **argv)
+         { "plugin",      required_argument, NULL, GETOPT_VAL_PLUGIN      },
+         { "plugin-opts", required_argument, NULL, GETOPT_VAL_PLUGIN_OPTS },
+         { "reuse-port",  no_argument,       NULL, GETOPT_VAL_REUSE_PORT  },
++        { "tcp-incoming-sndbuf", required_argument, NULL, GETOPT_VAL_TCP_INCOMING_SNDBUF },
++        { "tcp-outgoing-sndbuf", required_argument, NULL, GETOPT_VAL_TCP_OUTGOING_SNDBUF },
+         { "no-delay",    no_argument,       NULL, GETOPT_VAL_NODELAY     },
+         { "password",    required_argument, NULL, GETOPT_VAL_PASSWORD    },
+         { "key",         required_argument, NULL, GETOPT_VAL_KEY         },
+@@ -944,6 +956,12 @@ main(int argc, char **argv)
+         case GETOPT_VAL_REUSE_PORT:
+             reuse_port = 1;
+             break;
++        case GETOPT_VAL_TCP_INCOMING_SNDBUF:
++            tcp_incoming_sndbuf = atoi(optarg);
++            break;
++        case GETOPT_VAL_TCP_OUTGOING_SNDBUF:
++            tcp_outgoing_sndbuf = atoi(optarg);
++            break;
+         case 's':
+             if (remote_num < MAX_REMOTE_NUM) {
+                 parse_addr(optarg, &remote_addr[remote_num++]);
+@@ -1079,6 +1097,12 @@ main(int argc, char **argv)
+         if (reuse_port == 0) {
+             reuse_port = conf->reuse_port;
+         }
++        if (tcp_incoming_sndbuf == 0) {
++            tcp_incoming_sndbuf = conf->tcp_incoming_sndbuf;
++        }
++        if (tcp_outgoing_sndbuf == 0) {
++            tcp_outgoing_sndbuf = conf->tcp_outgoing_sndbuf;
++        }
+         if (fast_open == 0) {
+             fast_open = conf->fast_open;
+         }
+@@ -1167,6 +1191,22 @@ main(int argc, char **argv)
+         LOGI("resolving hostname to IPv6 address first");
+     }
+ 
++    if (tcp_incoming_sndbuf != 0 && tcp_incoming_sndbuf < SOCKET_BUF_SIZE) {
++        tcp_incoming_sndbuf = 0;
++    }
++
++    if (tcp_incoming_sndbuf != 0) {
++        LOGI("set TCP incoming connection send buffer size to %d", tcp_incoming_sndbuf);
++    }
++
++    if (tcp_outgoing_sndbuf != 0 && tcp_outgoing_sndbuf < SOCKET_BUF_SIZE) {
++        tcp_outgoing_sndbuf = 0;
++    }
++
++    if (tcp_outgoing_sndbuf != 0) {
++        LOGI("set TCP outgoing connection send buffer size to %d", tcp_outgoing_sndbuf);
++    }
++
+     if (plugin != NULL) {
+         int len          = 0;
+         size_t buf_size  = 256 * remote_num;
+diff --git a/src/server.c b/src/server.c
+index c52dfa1..346829d 100644
+--- a/src/server.c
++++ b/src/server.c
+@@ -109,6 +109,8 @@ static void resolv_free_cb(void *data);
+ 
+ int verbose    = 0;
+ int reuse_port = 0;
++int tcp_incoming_sndbuf = 0;
++int tcp_outgoing_sndbuf = 0;
+ 
+ int is_bind_local_addr = 0;
+ struct sockaddr_storage local_addr_v4;
+@@ -471,6 +473,10 @@ connect_to_remote(EV_P_ struct addrinfo *res,
+ #endif
+     setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+ 
++    if (tcp_outgoing_sndbuf > 0) {
++        setsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, &tcp_outgoing_sndbuf, sizeof(int));
++    }
++
+     // setup remote socks
+ 
+     if (setnonblocking(sockfd) == -1)
+@@ -1538,6 +1544,11 @@ accept_cb(EV_P_ ev_io *w, int revents)
+ #ifdef SO_NOSIGPIPE
+     setsockopt(serverfd, SOL_SOCKET, SO_NOSIGPIPE, &opt, sizeof(opt));
+ #endif
++
++    if (tcp_incoming_sndbuf > 0) {
++        setsockopt(serverfd, SOL_SOCKET, SO_SNDBUF, &tcp_incoming_sndbuf, sizeof(int));
++    }
++
+     setnonblocking(serverfd);
+ 
+     server_t *server = new_server(serverfd, listener);
+@@ -1577,6 +1588,8 @@ main(int argc, char **argv)
+     static struct option long_options[] = {
+         { "fast-open",       no_argument,       NULL, GETOPT_VAL_FAST_OPEN   },
+         { "reuse-port",      no_argument,       NULL, GETOPT_VAL_REUSE_PORT  },
++        { "tcp-incoming-sndbuf", required_argument, NULL, GETOPT_VAL_TCP_INCOMING_SNDBUF },
++        { "tcp-outgoing-sndbuf", required_argument, NULL, GETOPT_VAL_TCP_OUTGOING_SNDBUF },
+         { "no-delay",        no_argument,       NULL, GETOPT_VAL_NODELAY     },
+         { "acl",             required_argument, NULL, GETOPT_VAL_ACL         },
+         { "manager-address", required_argument, NULL,
+@@ -1634,6 +1647,12 @@ main(int argc, char **argv)
+         case GETOPT_VAL_REUSE_PORT:
+             reuse_port = 1;
+             break;
++        case GETOPT_VAL_TCP_INCOMING_SNDBUF:
++            tcp_incoming_sndbuf = atoi(optarg);
++            break;
++        case GETOPT_VAL_TCP_OUTGOING_SNDBUF:
++            tcp_outgoing_sndbuf = atoi(optarg);
++            break;
+         case 's':
+             if (server_num < MAX_REMOTE_NUM) {
+                 parse_addr(optarg, &server_addr[server_num++]);
+@@ -1760,6 +1779,12 @@ main(int argc, char **argv)
+         if (reuse_port == 0) {
+             reuse_port = conf->reuse_port;
+         }
++        if (tcp_incoming_sndbuf == 0) {
++            tcp_incoming_sndbuf = conf->tcp_incoming_sndbuf;
++        }
++        if (tcp_outgoing_sndbuf == 0) {
++            tcp_outgoing_sndbuf = conf->tcp_outgoing_sndbuf;
++        }
+         if (fast_open == 0) {
+             fast_open = conf->fast_open;
+         }
+@@ -1787,6 +1812,22 @@ main(int argc, char **argv)
+         }
+     }
+ 
++    if (tcp_incoming_sndbuf != 0 && tcp_incoming_sndbuf < SOCKET_BUF_SIZE) {
++        tcp_incoming_sndbuf = 0;
++    }
++
++    if (tcp_incoming_sndbuf != 0) {
++        LOGI("set TCP incoming connection send buffer size to %d", tcp_incoming_sndbuf);
++    }
++
++    if (tcp_outgoing_sndbuf != 0 && tcp_outgoing_sndbuf < SOCKET_BUF_SIZE) {
++        tcp_outgoing_sndbuf = 0;
++    }
++
++    if (tcp_outgoing_sndbuf != 0) {
++        LOGI("set TCP outgoing connection send buffer size to %d", tcp_outgoing_sndbuf);
++    }
++
+     if (server_num == 0) {
+         server_addr[server_num++].host = "0.0.0.0";
+     }
+diff --git a/src/tunnel.c b/src/tunnel.c
+index a928e61..dfb2bf6 100644
+--- a/src/tunnel.c
++++ b/src/tunnel.c
+@@ -82,6 +82,8 @@ int vpn = 0;
+ 
+ int verbose    = 0;
+ int reuse_port = 0;
++int tcp_incoming_sndbuf = 0;
++int tcp_outgoing_sndbuf = 0;
+ 
+ static crypto_t *crypto;
+ 
+@@ -721,6 +723,10 @@ accept_cb(EV_P_ ev_io *w, int revents)
+     setsockopt(serverfd, SOL_SOCKET, SO_NOSIGPIPE, &opt, sizeof(opt));
+ #endif
+ 
++    if (tcp_incoming_sndbuf > 0) {
++        setsockopt(serverfd, SOL_SOCKET, SO_SNDBUF, &tcp_incoming_sndbuf, sizeof(int));
++    }
++
+     int index                    = rand() % listener->remote_num;
+     struct sockaddr *remote_addr = listener->remote_addr[index];
+ 
+@@ -774,6 +780,10 @@ accept_cb(EV_P_ ev_io *w, int revents)
+         }
+     }
+ 
++    if (tcp_outgoing_sndbuf > 0) {
++        setsockopt(remotefd, SOL_SOCKET, SO_SNDBUF, &tcp_outgoing_sndbuf, sizeof(int));
++    }
++
+     // Setup
+     setnonblocking(remotefd);
+ #ifdef SET_INTERFACE
+@@ -898,6 +908,8 @@ main(int argc, char **argv)
+         { "plugin",      required_argument, NULL, GETOPT_VAL_PLUGIN      },
+         { "plugin-opts", required_argument, NULL, GETOPT_VAL_PLUGIN_OPTS },
+         { "reuse-port",  no_argument,       NULL, GETOPT_VAL_REUSE_PORT  },
++        { "tcp-incoming-sndbuf", required_argument, NULL, GETOPT_VAL_TCP_INCOMING_SNDBUF },
++        { "tcp-outgoing-sndbuf", required_argument, NULL, GETOPT_VAL_TCP_OUTGOING_SNDBUF },
+         { "password",    required_argument, NULL, GETOPT_VAL_PASSWORD    },
+         { "key",         required_argument, NULL, GETOPT_VAL_KEY         },
+         { "help",        no_argument,       NULL, GETOPT_VAL_HELP        },
+@@ -943,6 +955,12 @@ main(int argc, char **argv)
+         case GETOPT_VAL_REUSE_PORT:
+             reuse_port = 1;
+             break;
++        case GETOPT_VAL_TCP_INCOMING_SNDBUF:
++            tcp_incoming_sndbuf = atoi(optarg);
++            break;
++        case GETOPT_VAL_TCP_OUTGOING_SNDBUF:
++            tcp_outgoing_sndbuf = atoi(optarg);
++            break;
+         case 's':
+             if (remote_num < MAX_REMOTE_NUM) {
+                 parse_addr(optarg, &remote_addr[remote_num++]);
+@@ -1086,6 +1104,12 @@ main(int argc, char **argv)
+         if (reuse_port == 0) {
+             reuse_port = conf->reuse_port;
+         }
++        if (tcp_incoming_sndbuf == 0) {
++            tcp_incoming_sndbuf = conf->tcp_incoming_sndbuf;
++        }
++        if (tcp_outgoing_sndbuf == 0) {
++            tcp_outgoing_sndbuf = conf->tcp_outgoing_sndbuf;
++        }
+         if (fast_open == 0) {
+             fast_open = conf->fast_open;
+         }
+@@ -1106,6 +1130,22 @@ main(int argc, char **argv)
+     winsock_init();
+ #endif
+ 
++    if (tcp_incoming_sndbuf != 0 && tcp_incoming_sndbuf < SOCKET_BUF_SIZE) {
++        tcp_incoming_sndbuf = 0;
++    }
++
++    if (tcp_incoming_sndbuf != 0) {
++        LOGI("set TCP incoming connection send buffer size to %d", tcp_incoming_sndbuf);
++    }
++
++    if (tcp_outgoing_sndbuf != 0 && tcp_outgoing_sndbuf < SOCKET_BUF_SIZE) {
++        tcp_outgoing_sndbuf = 0;
++    }
++
++    if (tcp_outgoing_sndbuf != 0) {
++        LOGI("set TCP outgoing connection send buffer size to %d", tcp_outgoing_sndbuf);
++    }
++
+     if (plugin != NULL) {
+         uint16_t port = get_local_port();
+         if (port == 0) {
+diff --git a/src/utils.c b/src/utils.c
+index 0e94e5d..b1adec3 100644
+--- a/src/utils.c
++++ b/src/utils.c
+@@ -387,6 +387,10 @@ usage()
+     printf(
+         "                                  with Linux kernel > 3.7.0.\n");
+ #endif
++    printf(
++        "       [--tcp-incoming-sndbuf]    Size of the incoming connection TCP send buffer.\n");
++    printf(
++        "       [--tcp-outgoing-sndbuf]    Size of the outgoing connection TCP send buffer.\n");
+ #if defined(MODULE_REMOTE) || defined(MODULE_LOCAL)
+     printf(
+         "       [--acl <acl_file>]         Path to ACL (Access Control List).\n");
+-- 
+2.25.1
+

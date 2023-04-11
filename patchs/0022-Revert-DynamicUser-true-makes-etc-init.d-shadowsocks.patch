@@ -1,0 +1,27 @@
+From d1171f44d0d8da34ec016974e7b3b95b0202d831 Mon Sep 17 00:00:00 2001
+From: Max Lv <max.lv@hey.com>
+Date: Thu, 13 May 2021 12:33:44 +0800
+Subject: [PATCH 22/85] Revert ""DynamicUser=true" makes
+ "/etc/init.d/shadowsocks-libev start" fail."
+
+This reverts commit ca4caabac600930b8a8d777e58e654bba8de8a85.
+---
+ debian/shadowsocks-libev.service | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/debian/shadowsocks-libev.service b/debian/shadowsocks-libev.service
+index e89a33e..0aa4862 100644
+--- a/debian/shadowsocks-libev.service
++++ b/debian/shadowsocks-libev.service
+@@ -18,7 +18,7 @@ Wants=network-online.target
+ Type=simple
+ CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+ AmbientCapabilities=CAP_NET_BIND_SERVICE
+-#DynamicUser=true
++DynamicUser=true
+ EnvironmentFile=/etc/default/shadowsocks-libev
+ LimitNOFILE=32768
+ ExecStart=/usr/bin/ss-server -c $CONFFILE $DAEMON_ARGS
+-- 
+2.25.1
+

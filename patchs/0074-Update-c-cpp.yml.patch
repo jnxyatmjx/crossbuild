@@ -1,0 +1,35 @@
+From 64be5fda7d6df1b67149ee56f0a5f26a933f55a3 Mon Sep 17 00:00:00 2001
+From: jnxyatmjx <9018335+jnxyatmjx@users.noreply.github.com>
+Date: Tue, 4 Apr 2023 13:19:18 +0800
+Subject: [PATCH 74/85] Update c-cpp.yml
+
+---
+ .github/workflows/c-cpp.yml | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/.github/workflows/c-cpp.yml b/.github/workflows/c-cpp.yml
+index fa155ef..4324911 100644
+--- a/.github/workflows/c-cpp.yml
++++ b/.github/workflows/c-cpp.yml
+@@ -44,7 +44,8 @@ jobs:
+         echo -e "$(nproc) thread compile"
+         cd bld_
+         make -j$(nproc) || make -j1 || make -j1 V=s
+-        echo "::set-output name=stat::success"
++        #echo "::set-output name=stat::success" #command is deprecated 
++        echo "stat=success" >> $GITHUB_OUTPUT
+     
+     - name: upload bin files 
+       uses: actions/upload-artifact@v3
+@@ -65,6 +66,7 @@ jobs:
+       id: tag
+       if: (!cancelled())
+       run: |
+-        echo "::set-output name=release_tag::$(date +"%Y.%m.%d-%H%M%S")"
++        #echo "::set-output name=release_tag::$(date +"%Y.%m.%d-%H%M%S")" #command is deprecated
++        echo -e "release_tag::$(date +"%Y.%m.%d-%H%M%S")" >> $GITHUB_OUTPUT
+         touch release.txt
+         echo "::set-output name=stat::success"
+-- 
+2.25.1
+
