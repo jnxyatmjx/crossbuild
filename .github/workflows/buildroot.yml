@@ -159,7 +159,7 @@ jobs:
         working-directory: /workdir
         env:
           REPO_URL: https://git.busybox.net/buildroot
-          REPO_BRANCH: 2019.11.3
+          REPO_BRANCH: 2022.02.11
         run: |
           df -hT $PWD
           git config --global advice.detachedHead false
