@@ -71,6 +71,9 @@ jobs:
     permissions:
       contents: write
     
+    env:
+      platformtt: ${{ 'Raspberry3B' }}
+
     steps:
       - uses: actions/checkout@v3
         with: 
@@ -121,7 +124,7 @@ jobs:
         run: |
           df -hT $PWD
           cd $GITHUB_WORKSPACE/buildroot/$RASPOUT
-          tar -cjvf /workdir/$RASPOUT.${{ matrix.os }}.tar.bz2 ./target/
+          tar -cjvf /workdir/$RASPOUT.${{ env.platformtt }}.tar.bz2 ./target/
           echo "stat=okk" >> $GITHUB_OUTPUT
 
       - name: upload file & directory
@@ -129,7 +132,7 @@ jobs:
         if: steps.tartt.outputs.stat == 'okk'
         with:
           name: raspi3b-toolchain
-          path: /workdir/${{ env.RASPOUT }}.${{ matrix.os }}.tar.bz2
+          path: /workdir/${{ env.RASPOUT }}.${{ env.platformtt }}.tar.bz2
 
 
 
@@ -143,6 +146,9 @@ jobs:
     permissions:
       contents: write
     
+    env:
+      platformuu: ${{ 'EdgeRouter-6P' }}
+
     steps:
       - uses: actions/checkout@v3
         with: 
@@ -186,7 +192,7 @@ jobs:
         run: |
           df -hT $PWD
           cd $GITHUB_WORKSPACE/buildroot/$ER6POUT
-          tar -cjvf /workdir/$ER6POUT.${{ matrix.os }}.tar.bz2 ./target/
+          tar -cjvf /workdir/$ER6POUT.${{ env.platformuu }}.tar.bz2 ./target/
           echo "stat=okk" >> $GITHUB_OUTPUT
 
       - name: upload file & directory
@@ -194,7 +200,7 @@ jobs:
         if: steps.tartt.outputs.stat == 'okk'
         with:
           name: er6p-toolchain
-          path: /workdir/${{ env.ER6POUT }}.${{ matrix.os }}.tar.bz2      
+          path: /workdir/${{ env.ER6POUT }}.${{ env.platformuu }}.tar.bz2
     
 
 ########################################Merge all workflows################################################
