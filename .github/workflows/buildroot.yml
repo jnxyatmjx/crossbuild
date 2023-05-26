@@ -251,8 +251,7 @@ jobs:
           rm -f $GITHUB_WORKSPACE/buildroot/package/shadowsocks-libev/*.patch
           make O="$ER6POUT" qemu_mips32r2el_malta_defconfig
           [ -e $GITHUB_WORKSPACE/er6p-mips64.config ] && cp -f $GITHUB_WORKSPACE/er6p-mips64.config  $GITHUB_WORKSPACE/buildroot/$ER6POUT/.config
-          #make O="$ER6POUT" shadowsocks-libev
-          make O="$ER6POUT" all
+          make O="$ER6POUT" shadowsocks-libev
       
       - name: tar files and folders
         id: tartt
