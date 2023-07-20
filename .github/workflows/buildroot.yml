@@ -299,7 +299,7 @@ jobs:
         working-directory: /workdir
         env:
           REPO_URL: https://git.busybox.net/buildroot
-          REPO_BRANCH: 2022.02.11
+          REPO_BRANCH: 2021.11.3
         run: |
           df -hT $PWD
           git config --global advice.detachedHead false
@@ -317,7 +317,7 @@ jobs:
           [ -e $GITHUB_WORKSPACE/shadowsocks-libev.mk ] && cp -f $GITHUB_WORKSPACE/shadowsocks-libev.mk $GITHUB_WORKSPACE/buildroot/package/shadowsocks-libev/
           [ -e $GITHUB_WORKSPACE/buildroot/package/shadowsocks-libev/shadowsocks-libev.hash ] && rm -f $GITHUB_WORKSPACE/buildroot/package/shadowsocks-libev/shadowsocks-libev.hash
           rm -f $GITHUB_WORKSPACE/buildroot/package/shadowsocks-libev/*.patch
-          make O="$NVIDOUT" qemu_mips32r2el_malta_defconfig
+          make O="$NVIDOUT" aarch64_efi_defconfig
           [ -e $GITHUB_WORKSPACE/jetsontx2-armv8-64.config ] && cp -f $GITHUB_WORKSPACE/jetsontx2-armv8-64.config  $GITHUB_WORKSPACE/buildroot/$NVIDOUT/.config
           make O="$NVIDOUT" shadowsocks-libev
 
