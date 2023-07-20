@@ -21,8 +21,9 @@ on:
 
 env:
   TZ: Asia/Shanghai
-  ER6POUT: er6p-out
-  RASPOUT: rasp3b-out
+  ER6POUT: ubnt
+  RASPOUT: raspberrypi
+  NVIDOUT: nvidia
   RELEDIR: relxyzss
 
 
@@ -266,11 +267,78 @@ jobs:
         if: steps.tartt.outputs.stat == 'okk'
         with:
           name: er6p-mips64-toolchin
-          path: /workdir/${{ env.ER6POUT }}.${{ env.platformuu }}.tar.bz2    
+          path: /workdir/${{ env.ER6POUT }}.${{ env.platformuu }}.tar.bz2
+
+
+####################Jetson TX2######################################Jetson TX2############################
+  jetson-tx2:
+    needs: buildroot
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ "ubuntu-20.04" ]
+    permissions:
+      contents: write
+
+    env:
+      platformuu: ${{ 'Jetson-TX2-ARMv8' }}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: true
+
+      - name: where i am
+        run: |
+          sudo timedatectl set-timezone "$TZ"
+          sudo mkdir -p /workdir
+          sudo chown $USER:$GROUPS /workdir
+
+      - name: clone source code
+        working-directory: /workdir
+        env:
+          REPO_URL: https://git.busybox.net/buildroot
+          REPO_BRANCH: 2022.02.11
+        run: |
+          df -hT $PWD
+          git config --global advice.detachedHead false
+          git clone --recurse-submodules --branch $REPO_BRANCH $REPO_URL
+          cd /workdir/buildroot
+          git checkout $REPO_BRANCH
+          git pull origin $REPO_BRANCH
+
+          ln -sf /workdir/buildroot $GITHUB_WORKSPACE/buildroot
+          sudo apt-get -qq install sed make binutils gcc g++ bash patch bzip2 perl tar cpio unzip rsync wget libncurses-dev
+
+      - name: build
+        run: |
+          cd $GITHUB_WORKSPACE/buildroot
+          [ -e $GITHUB_WORKSPACE/shadowsocks-libev.mk ] && cp -f $GITHUB_WORKSPACE/shadowsocks-libev.mk $GITHUB_WORKSPACE/buildroot/package/shadowsocks-libev/
+          [ -e $GITHUB_WORKSPACE/buildroot/package/shadowsocks-libev/shadowsocks-libev.hash ] && rm -f $GITHUB_WORKSPACE/buildroot/package/shadowsocks-libev/shadowsocks-libev.hash
+          rm -f $GITHUB_WORKSPACE/buildroot/package/shadowsocks-libev/*.patch
+          make O="$NVIDOUT" qemu_mips32r2el_malta_defconfig
+          [ -e $GITHUB_WORKSPACE/jetsontx2-armv8-64.config ] && cp -f $GITHUB_WORKSPACE/jetsontx2-armv8-64.config  $GITHUB_WORKSPACE/buildroot/$NVIDOUT/.config
+          make O="$NVIDOUT" shadowsocks-libev
+
+      - name: tar files and folders
+        id: tartt
+        run: |
+          df -hT $PWD
+          cd $GITHUB_WORKSPACE/buildroot/$NVIDOUT
+          tar -cjvf /workdir/$NVIDOUT.${{ env.platformuu }}.tar.bz2 ./target/usr/bin/ ./target/usr/lib/
+          echo "stat=okk" >> $GITHUB_OUTPUT
+
+      - name: upload file & directory
+        uses: actions/upload-artifact@v3
+        if: steps.tartt.outputs.stat == 'okk'
+        with:
+          name: jetsontx2-armv8-toolchin
+          path: /workdir/${{ env.NVIDOUT }}.${{ env.platformuu }}.tar.bz2
 
 ########################################Merge all workflows################################################
   mergeall:
-    needs: [er6P, raspberry3B, er6p-mips64]
+    needs: [er6P, raspberry3B, er6p-mips64, jetson-tx2]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -300,6 +368,11 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: er6p-mips64-toolchin
+          path: ${{ github.workspace }}/${{ env.RELEDIR }}
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: jetsontx2-armv8-toolchin
           path: ${{ github.workspace }}/${{ env.RELEDIR }}
 
       - name: generate release tag

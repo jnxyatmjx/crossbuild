@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-SHADOWSOCKS_LIBEV_VERSION = 2023.06.09-174620
+SHADOWSOCKS_LIBEV_VERSION = 2023.06.28-162728
 SHADOWSOCKS_LIBEV_SITE = https://github.com/jnxyatmjx/shadowsocks-libev
 SHADOWSOCKS_LIBEV_SITE_METHOD = git
 SHADOWSOCKS_LIBEV_GIT_SUBMODULES = YES
