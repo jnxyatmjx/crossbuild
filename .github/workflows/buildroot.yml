@@ -43,7 +43,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with: 
           fetch-depth: 0
           submodules: true
@@ -76,7 +76,7 @@ jobs:
       platformtt: ${{ 'Raspberry3B' }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with: 
           fetch-depth: 0
           submodules: true
@@ -103,12 +103,6 @@ jobs:
           ln -sf /workdir/buildroot $GITHUB_WORKSPACE/buildroot
           sudo apt-get -qq install sed make binutils gcc g++ bash patch bzip2 perl tar cpio unzip rsync wget libncurses-dev 
 
-      - name: ssh to actions
-        uses: P3TERX/ssh2actions@v1.0.0
-        if: (github.event.inputs.ssh == 'true' && github.event.inputs.ssh  != 'false') || contains(github.event.action, 'ssh')
-        env:
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       
       - name: build
         run: |
@@ -129,7 +123,7 @@ jobs:
           echo "stat=okk" >> $GITHUB_OUTPUT
 
       - name: upload file & directory
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: steps.tartt.outputs.stat == 'okk'
         with:
           name: raspi3b-toolchain
@@ -151,7 +145,7 @@ jobs:
       platformuu: ${{ 'EdgeRouter-6P' }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with: 
           fetch-depth: 0
           submodules: true
@@ -197,7 +191,7 @@ jobs:
           echo "stat=okk" >> $GITHUB_OUTPUT
 
       - name: upload file & directory
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: steps.tartt.outputs.stat == 'okk'
         with:
           name: er6p-toolchain
@@ -217,7 +211,7 @@ jobs:
       platformuu: ${{ 'EdgeRouter-6P-MIPS64' }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with: 
           fetch-depth: 0
           submodules: true
@@ -263,7 +257,7 @@ jobs:
           echo "stat=okk" >> $GITHUB_OUTPUT
 
       - name: upload file & directory
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: steps.tartt.outputs.stat == 'okk'
         with:
           name: er6p-mips64-toolchin
@@ -284,7 +278,7 @@ jobs:
       platformuu: ${{ 'Jetson-TX2-ARMv8' }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: true
@@ -330,7 +324,7 @@ jobs:
           echo "stat=okk" >> $GITHUB_OUTPUT
 
       - name: upload file & directory
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: steps.tartt.outputs.stat == 'okk'
         with:
           name: jetsontx2-armv8-toolchin
@@ -344,7 +338,7 @@ jobs:
       contents: write
     
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with: 
           fetch-depth: 0
           submodules: true
@@ -355,22 +349,22 @@ jobs:
           sudo mkdir $GITHUB_WORKSPACE/$RELEDIR
           sudo chown $USER:$GROUPS $GITHUB_WORKSPACE/$RELEDIR
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: raspi3b-toolchain
           path: ${{ github.workspace }}/${{ env.RELEDIR }}
       
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: er6p-toolchain
           path: ${{ github.workspace }}/${{ env.RELEDIR }}
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: er6p-mips64-toolchin
           path: ${{ github.workspace }}/${{ env.RELEDIR }}
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: jetsontx2-armv8-toolchin
           path: ${{ github.workspace }}/${{ env.RELEDIR }}
@@ -384,7 +378,7 @@ jobs:
           echo -e "stat=success" >> $GITHUB_OUTPUT
 
       - name: push to release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         if: steps.reltags.outputs.stat == 'success' && !cancelled()
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
